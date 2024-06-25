@@ -7,5 +7,5 @@ app.use(bodyParser.json());
 
 //INITIALIZE
 
-const tetris_controller = require('./routes/tetris_controller.js');
+const tetris_controller = require('./controllers/tetris_controller.js');
 app.use('/tetris', tetris_controller);
