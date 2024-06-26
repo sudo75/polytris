@@ -34,14 +34,14 @@ class Game {
         container.append(gameBoard);
     }
 
-    start() {
-        fetch('/start', {
+    start(game_id) {
+        fetch('/tetris/start', {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
             },
             body: {
-
+                game_id: game_id
             }
         })
         .then(() => { //ensure the response
@@ -51,7 +51,7 @@ class Game {
             return response.json();
         })
         .then(() => { //handle the response
-
+            
         })
         .catch((error) => {
             console.error(`Error: ${error}`);
@@ -59,7 +59,7 @@ class Game {
     }
 
     sendReq(req, method, body, callback) {
-        fetch(`${req}`, {
+        fetch(`${req}`, { //use /tetris/xyz format
             method: `${method}`,
             headers: {
                 'Content-Type': 'application/json'
@@ -84,3 +84,4 @@ class Game {
 const game = new Game(300, 600);
 
 game.init();
+

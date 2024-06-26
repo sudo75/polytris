@@ -7,8 +7,8 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
 
-const tetris_controller = require('./controllers/tetris_controller.js');
-app.use('/tetris', tetris_controller);
+const tetris_routes = require('./routes/tetris_routes');
+app.use('/tetris', tetris_routes);
 
 app.use(express.static(path.join(__dirname, 'public')));
 

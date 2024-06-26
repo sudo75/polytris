@@ -1,11 +1,7 @@
 const express = require('express');
-const router = express.Router();
 
-router.post('/', (req, res) => {
-    const body = req.body;
-    console.log(body);
-
-    res.json({ status: 'Message received' });
-});
-
-module.exports = router;
+exports.start = (req, res) => {
+    console.log('start triggered')
+    //if game exists code 400
+    //if not, create game via interacting with models and send code 200
+};
