@@ -36,7 +36,7 @@ class Game {
     }
 
     start() {
-
+        
     }
 
     sendReq(req) {
