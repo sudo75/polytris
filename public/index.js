@@ -29,18 +29,55 @@ class Game {
             tile.style.width = `${r_blockWidth}px`;
             tile.style.height = `${r_blockHeight}px`;
             gameBoard.append(tile);
-            console.log(i);
         }
 
         container.append(gameBoard);
     }
 
     start() {
-        
+        fetch('/start', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: {
+
+            }
+        })
+        .then(() => { //ensure the response
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+            return response.json();
+        })
+        .then(() => { //handle the response
+
+        })
+        .catch((error) => {
+            console.error(`Error: ${error}`);
+        });
     }
 
-    sendReq(req) {
-
+    sendReq(req, method, body, callback) {
+        fetch(`${req}`, {
+            method: `${method}`,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: `${body}`
+        })
+        .then(() => { //ensure the response
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+            return response.json();
+        })
+        .then(() => { //handle the response
+            callback();
+        })
+        .catch((error) => {
+            console.error(`Error: ${error}`);
+        });
     }
 }
 
