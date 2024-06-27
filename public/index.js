@@ -51,10 +51,10 @@ class Game {
             return response.json();
         })
         .then((data) => { //handle the response
-            console.log('game started - send via public JS')
+            console.log('Game started:', data);
         })
         .catch((error) => {
-            console.error(`Error: ${error}`);
+            console.error(`${error}`);
         });
     }
 
