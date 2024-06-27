@@ -40,18 +40,18 @@ class Game {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: {
+            body: JSON.stringify({
                 game_id: game_id
-            }
+            })
         })
-        .then(() => { //ensure the response
+        .then((response) => { //ensure the response
             if (!response.ok) {
                 throw new Error('Failed to fetch data');
             }
             return response.json();
         })
-        .then(() => { //handle the response
-            
+        .then((data) => { //handle the response
+            console.log('game started - send via public JS')
         })
         .catch((error) => {
             console.error(`Error: ${error}`);
@@ -64,7 +64,7 @@ class Game {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: `${body}`
+            body: `${body}`//ensure body is stringified
         })
         .then(() => { //ensure the response
             if (!response.ok) {
@@ -85,3 +85,12 @@ const game = new Game(300, 600);
 
 game.init();
 
+document.addEventListener('click', (event) => {
+    const target = event.target;
+
+    switch(target.id) {
+        case "btn_start":
+            game.start(null);
+            break;
+    }
+});
