@@ -10,6 +10,8 @@ class Game {
             width: 10,
             height: 20
         }
+        this.frameFreq = 1000; //ms
+        this.id = null;
     }
 
     init() {
@@ -34,14 +36,14 @@ class Game {
         container.append(gameBoard);
     }
 
-    start(game_id) {
+    start(id) {
         fetch('/tetris/start', {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                game_id: game_id
+                id: id
             })
         })
         .then((response) => { //ensure the response
@@ -52,28 +54,43 @@ class Game {
         })
         .then((data) => { //handle the response
             console.log('Game started:', data);
+            this.id = data.id;
+            gameLoop();
         })
         .catch((error) => {
             console.error(`${error}`);
         });
+        
+        //Run gameloop
     }
 
-    sendReq(req, method, body, callback) {
-        fetch(`${req}`, { //use /tetris/xyz format
+    requestNewFrame() {
+        this.sendReq(
+            '/tetris/reqFrame',
+            'POST',
+            JSON.stringify({ id: this.id }),
+            (data) => {
+                displayFrame(data.frame);
+            }
+        )
+    }
+
+    sendReq(url, method, body, callback) {
+        fetch(`${url}`, { //use /tetris/xyz format
             method: `${method}`,
             headers: {
                 'Content-Type': 'application/json'
             },
             body: `${body}`//ensure body is stringified
         })
-        .then(() => { //ensure the response
+        .then((response) => { //ensure the response
             if (!response.ok) {
                 throw new Error('Failed to fetch data');
             }
             return response.json();
         })
-        .then(() => { //handle the response
-            callback();
+        .then((data) => { //handle the response
+            callback(data);
         })
         .catch((error) => {
             console.error(`Error: ${error}`);
@@ -94,3 +111,15 @@ document.addEventListener('click', (event) => {
             break;
     }
 });
+
+function gameLoop() {
+    game.requestNewFrame();
+
+    
+    setTimeout(gameLoop, game.frameFreq);
+}
+
+function displayFrame(frame) {
+    const board = document.querySelector('.game_container');
+    console.log(frame);
+}
