@@ -1,3 +1,4 @@
+
 console.log('public JS running!');
 
 class Game {
@@ -70,9 +71,22 @@ class Game {
             'POST',
             JSON.stringify({ id: this.id }),
             (data) => {
-                displayFrame(data.frame);
+                this.displayFrame(data.frame);
             }
         )
+    }
+
+    displayFrame(frame) {
+        const board = document.querySelectorAll('.game_tile');
+        console.log(frame);
+
+        for (let i = 0; i < game.b_dimensions.height; i++) {
+            for (let j = 0; j < game.b_dimensions.width; j++) {
+                const tileIndex = i * game.b_dimensions.width + j;
+                board[tileIndex].innerText = frame[i][j];
+            }
+        }
+    
     }
 
     sendReq(url, method, body, callback) {
@@ -96,6 +110,27 @@ class Game {
             console.error(`Error: ${error}`);
         });
     }
+
+    async sendAsyncReq(url, method, body, callback) {
+        try {
+            const response = await fetch(url, { //use /tetris/xyz format
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: body //ensure body is stringified
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+    
+            const data = await response.json();
+            callback(data);
+        } catch (error) {
+            console.error(`Error: ${error}`);
+        }
+    }
 }
 
 const game = new Game(300, 600);
@@ -113,15 +148,7 @@ document.addEventListener('click', (event) => {
 });
 
 function gameLoop() {
-    game.requestNewFrame();
+    const frame = game.requestNewFrame();
 
-    
     setTimeout(gameLoop, game.frameFreq);
 }
-
-function displayFrame(frame) {
-    const board = document.querySelector('.game_container');
-    console.log(frame);
-}
-
-//test commit
