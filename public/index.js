@@ -11,8 +11,9 @@ class Game {
             width: 10,
             height: 20
         }
-        this.frameFreq = 1000; //ms
+        this.frameFreq = 200; //ms
         this.id = null;
+        this.status = null;
     }
 
     init() {
@@ -71,22 +72,27 @@ class Game {
             'POST',
             JSON.stringify({ id: this.id }),
             (data) => {
-                this.displayFrame(data.frame);
+                console.log(data)
+                this.displayFrame(data.frame, data.frame_preClear, data.status);
             }
         )
     }
 
-    displayFrame(frame) {
+    displayFrame(frame, frame_preClear, status) {
         const board = document.querySelectorAll('.game_tile');
-        console.log(frame);
 
         for (let i = 0; i < game.b_dimensions.height; i++) {
             for (let j = 0; j < game.b_dimensions.width; j++) {
                 const tileIndex = i * game.b_dimensions.width + j;
-                board[tileIndex].innerText = frame[i][j];
+
+                const displayText = frame[i][j] !== 0 ? frame[i][j]: "";
+                board[tileIndex].innerText = displayText;
+
+                //board[]
             }
         }
-    
+
+        this.status = status;    
     }
 
     sendReq(url, method, body, callback) {
@@ -148,7 +154,11 @@ document.addEventListener('click', (event) => {
 });
 
 function gameLoop() {
-    const frame = game.requestNewFrame();
+    game.requestNewFrame();
 
-    setTimeout(gameLoop, game.frameFreq);
+    if (game.status === "end") {
+        return;
+    }
+    
+    const gameTimeout = setTimeout(gameLoop, game.frameFreq);
 }

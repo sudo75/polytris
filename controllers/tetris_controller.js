@@ -20,8 +20,8 @@ exports.reqFrame = (req, res) => {
     const { id } = req.body;
 
     if (games[id]) {
-        const frame = games[id].pushFrame();
-        return res.status(200).json({ message: 'Frame pushed', frame: frame});
+        const data = games[id].pushFrame();
+        return res.status(200).json({ message: 'Frame pushed', frame: data.frame, frame_preClear: data.frame_preClear, status: data.status});
     } else {
         return res.status(404).json({ message: 'Game not found' });
     }
