@@ -160,5 +160,23 @@ function gameLoop() {
         return;
     }
     
-    const gameTimeout = setTimeout(gameLoop, game.frameFreq);
+    setTimeout(gameLoop, game.frameFreq);
 }
+
+document.addEventListener("keydown", (event) => {
+    const key = event.key;
+    switch (key) {
+        case "ArrrowUp":
+            
+            break;
+        case "ArrrowDown":
+            
+            break;
+        case "ArrrowLeft":
+            
+            break;
+        case "ArrrowRight":
+            
+            break;
+    }
+});

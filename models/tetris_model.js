@@ -1,9 +1,6 @@
-const { log } = require('console');
-const { nextTick } = require('process');
-
 class Game {
     constructor(id) {
-        this.id = id
+        this.id = id;
         this.board = [];
         this.width = 10;
         this.height = 20;
@@ -26,21 +23,7 @@ class Game {
 
     start(width, height) {
         this.board = this.initBoard(width, height);
-        
         this.spawnNewPolyomino();
-        /*
-        this.board[0][0] = 1;
-        this.board[1][1] = 1;
-        this.board[0][2] = 1;
-        this.board[1][3] = 1;
-        this.board[0][4] = 1;
-        this.board[1][5] = 1;
-        this.board[0][6] = 1;
-        this.board[1][7] = 1;
-        this.board[0][8] = 1;
-        this.board[1][9] = 1;
-        */
-
         this.status = "play";
     }
 
@@ -98,7 +81,6 @@ class Game {
         }
 
         function canMove(board, height, currentTetId) {
-            console.log(activePolyomino)
             for (let i = 0; i < activePolyomino.length; i++) {
                 const cell = activePolyomino[i];
                 if (cell[0] + 1 < height) {
