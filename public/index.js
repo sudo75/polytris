@@ -96,7 +96,7 @@ class Game {
 
     sendReq(url, method, body, callback) {
         console.log(window.location.origin);
-        fetch(`${window.location.origin}${url}`, { //use /tetris/xyz format
+        fetch(`${window.location.origin}.${url}`, { //use /tetris/xyz format
             method: `${method}`,
             headers: {
                 'Content-Type': 'application/json'
