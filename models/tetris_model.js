@@ -68,9 +68,7 @@ class Game {
         }
     }
     
-    pushFrame() {
-        
-
+    getActivePolyomino() {
         let activePolyomino = []
         for (let i = this.height - 1; i >= 0; i--) {
             for (let j = this.width - 1; j >= 0; j--) {
@@ -79,6 +77,11 @@ class Game {
                 }
             }
         }
+        return activePolyomino;
+    }
+
+    pushFrame() {
+        let activePolyomino = this.getActivePolyomino();
 
         function canMove(board, height, currentTetId) {
             for (let i = 0; i < activePolyomino.length; i++) {
@@ -107,8 +110,6 @@ class Game {
         } else {
             this.spawnNewPolyomino();
         }
-        
-
 
         const frame_preClear = this.deepCopy(this.getBoard_typeOnly());
 
@@ -143,6 +144,51 @@ class Game {
 
     deepCopy(data) {
         return JSON.parse(JSON.stringify(data));
+    }
+
+    input_up() {
+
+    }
+
+    input_down() {
+
+    }
+
+    input_left() {
+        let activePolyomino = this.getActivePolyomino();
+
+        function validInput(board, nextPolyominoId) {
+            activePolyomino.forEach((cell) => {
+                const row = cell[0];
+                const col = cell[1];
+
+                if (row > 0 && row <= width - 1) {
+                    if (board[row][col - 1].type === 0 || (board[row][col - 1].pol_id === nextPolyominoId - 1)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+
+                } else {
+                    return false;
+                }
+            });
+        }
+
+        console.log(validInput(this.board, this.nextPolyominoId))
+
+        if (validInput(this.board, this.nextPolyominoId)) {
+
+        }
+        
+    }
+
+    input_right() {
+
+    }
+
+    getFrame() {
+
     }
 }
 

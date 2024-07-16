@@ -39,7 +39,7 @@ class Game {
     }
 
     start(id) {
-        fetch('/tetris/start', {
+        fetch(`${window.location.origin}/tetris/start`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -72,7 +72,6 @@ class Game {
             'POST',
             JSON.stringify({ id: this.id }),
             (data) => {
-                console.log(data)
                 this.displayFrame(data.frame, data.frame_preClear, data.status);
             }
         )
@@ -96,7 +95,7 @@ class Game {
     }
 
     sendReq(url, method, body, callback) {
-        fetch(`${url}`, { //use /tetris/xyz format
+        fetch(`${window.location.origin}${url}`, { //use /tetris/xyz format
             method: `${method}`,
             headers: {
                 'Content-Type': 'application/json'
@@ -165,18 +164,13 @@ function gameLoop() {
 
 document.addEventListener("keydown", (event) => {
     const key = event.key;
-    switch (key) {
-        case "ArrrowUp":
-            
-            break;
-        case "ArrrowDown":
-            
-            break;
-        case "ArrrowLeft":
-            
-            break;
-        case "ArrrowRight":
-            
-            break;
-    }
+    game.sendReq(
+        `/tetris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight
+        'POST',
+        JSON.stringify({ id: this.id }),
+        (data) => {
+            //this.displayFrame(data.frame, data.frame_preClear, data.status);
+        }
+    );
+
 });

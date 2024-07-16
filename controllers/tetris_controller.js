@@ -26,3 +26,25 @@ exports.reqFrame = (req, res) => {
         return res.status(404).json({ message: 'Game not found' });
     }
 }
+
+exports.input_up = (req, res) => {
+    const { id } = req.body;
+
+}
+exports.input_down = (req, res) => {
+    const { id } = req.body;
+
+}
+exports.input_left = (req, res) => {
+    const { id } = req.body;
+
+    games[id].input_left();
+    games[id].getFrame();
+
+    return res.status(200).json({ message: 'DEV'});
+
+}
+exports.input_right = (req, res) => {
+    const { id } = req.body;
+
+}
