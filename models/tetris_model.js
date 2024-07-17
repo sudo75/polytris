@@ -36,9 +36,9 @@ class Game {
             const data = await fs.readFile(path.join(__dirname, '../polyominoes/tetrominoes.json'), 'utf-8');
             const polyominoes = JSON.parse(data);
 
-            const newPolyomino = polyominoes[type];
+            const newPolyomino = polyominoes[type - 1];
             const newPolyominoVariations = newPolyomino.pos.length;
-            const newPolyominoPos = newPolyomino.pos[Math.floor(Math.random() * newPolyominoVariations)]
+            const newPolyominoPos = newPolyomino.pos[Math.floor(Math.random() * newPolyominoVariations)];
 
 
             if (newPolyominoPos) {
