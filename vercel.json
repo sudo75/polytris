@@ -1,9 +1,5 @@
 {
     "version": 2,
-    "builds": [
-        { "src": "tetris/*.js", "use": "@vercel/node" },
-        { "src": "public/**/*", "use": "@vercel/static" }
-    ],
     "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }, { "source": "/api/(.*)", "destination": "/api" }]
 }
 
