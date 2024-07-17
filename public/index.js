@@ -40,7 +40,7 @@ class Game {
 
     start(id) {
         fetch(`tetris/start`, {
-            method: "GET",
+            method: "POST",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -69,7 +69,7 @@ class Game {
     requestNewFrame() {
         this.sendReq(
             'tetris/reqFrame',
-            'GET',
+            'POST',
             JSON.stringify({ id: this.id }),
             (data) => {
                 this.displayFrame(data.frame, data.frame_preClear, data.status);
