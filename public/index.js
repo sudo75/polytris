@@ -39,7 +39,7 @@ class Game {
     }
 
     start(id) {
-        fetch(`${window.location.origin}/tetris/start`, {
+        fetch(`tetris/start`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -68,7 +68,7 @@ class Game {
 
     requestNewFrame() {
         this.sendReq(
-            '/tetris/reqFrame',
+            'tetris/reqFrame',
             'POST',
             JSON.stringify({ id: this.id }),
             (data) => {
@@ -95,8 +95,7 @@ class Game {
     }
 
     sendReq(url, method, body, callback) {
-        console.log(window.location.origin);
-        fetch(`${window.location.origin}${url}`, { //use /tetris/xyz format
+        fetch(`${url}`, { //use /tetris/xyz format
             method: `${method}`,
             headers: {
                 'Content-Type': 'application/json'
