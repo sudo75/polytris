@@ -38,10 +38,11 @@ exports.input_down = (req, res) => {
 exports.input_left = (req, res) => {
     const { id } = req.body;
 
-    games[id].input_left();
-    games[id].getFrame();
 
-    return res.status(200).json({ message: 'DEV'});
+    games[id].input_left();
+    const frame = games[id].getFrame();
+
+    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: frame});
 
 }
 exports.input_right = (req, res) => {

@@ -167,9 +167,9 @@ document.addEventListener("keydown", (event) => {
     game.sendReq(
         `/tetris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight
         'POST',
-        JSON.stringify({ id: this.id }),
+        JSON.stringify({ id: game.id }),
         (data) => {
-            //this.displayFrame(data.frame, data.frame_preClear, data.status);
+            game.displayFrame(data.frame, null, game.status);
         }
     );
 

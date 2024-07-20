@@ -83,12 +83,12 @@ class Game {
     pushFrame() {
         let activePolyomino = this.getActivePolyomino();
 
-        function canMove(board, height, currentTetId) {
+        function canMove(board, height, currentPolId) {
             for (let i = 0; i < activePolyomino.length; i++) {
                 const cell = activePolyomino[i];
                 if (cell[0] + 1 < height) {
                     if (board[cell[0] + 1][cell[1]].type !== 0) {
-                        if (board[cell[0] + 1][cell[1]].pol_id !== currentTetId) {
+                        if (board[cell[0] + 1][cell[1]].pol_id !== currentPolId) {
                             return false;
                         }
                     }
@@ -157,13 +157,13 @@ class Game {
     input_left() {
         let activePolyomino = this.getActivePolyomino();
 
-        function validInput(board, nextPolyominoId) {
+        function validInput(board, currentPolId, width) {
             activePolyomino.forEach((cell) => {
                 const row = cell[0];
                 const col = cell[1];
 
                 if (row > 0 && row <= width - 1) {
-                    if (board[row][col - 1].type === 0 || (board[row][col - 1].pol_id === nextPolyominoId - 1)) {
+                    if (board[row][col - 1].type === 0 || (board[row][col - 1].pol_id === currentPolId)) {
                         return true;
                     } else {
                         return false;
@@ -175,10 +175,20 @@ class Game {
             });
         }
 
-        console.log(validInput(this.board, this.nextPolyominoId))
+        if (validInput(this.board, this.nextPolyominoId, this.width)) {
+            //const og_board = this.deepCopy(this.board);
+            for (let i = 0; i < this.width; i++) {
+                for (let j = 0; j < this.height; j++) {
+                    activePolyomino.forEach(cell => {
+                        const row = cell[0];
+                        const col = cell[1];
 
-        if (validInput(this.board, this.nextPolyominoId)) {
-
+                        if (this.board[row][col].type !== 0 && this.board[row][col].pol_id === this.nextPolyominoId - 1) {
+                            this.board[row][col - 1] = this.board[row][col];
+                        }
+                    });
+                }
+            }
         }
         
     }
@@ -188,7 +198,8 @@ class Game {
     }
 
     getFrame() {
-
+        const frame = this.getBoard_typeOnly();
+        return frame;
     }
 }
 
