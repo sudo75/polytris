@@ -11,7 +11,7 @@ class Game {
             width: 10,
             height: 20
         }
-        this.frameFreq = 200; //ms
+        this.frameFreq = 500; //ms
         this.id = null;
         this.status = null;
     }
