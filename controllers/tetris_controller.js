@@ -30,16 +30,26 @@ exports.reqFrame = (req, res) => {
 exports.input_up = (req, res) => {
     const { id } = req.body;
 
+    games[id].input_up();
+    const frame = games[id].getFrame();
+
+    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: frame});
+
 }
 exports.input_down = (req, res) => {
     const { id } = req.body;
+
+    games[id].input_down();
+    const frame = games[id].getFrame();
+
+    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: frame});
 
 }
 exports.input_left = (req, res) => {
     const { id } = req.body;
 
 
-    games[id].input_lateral(-1);
+    games[id].input_left();
     const frame = games[id].getFrame();
 
     return res.status(200).json({ message: 'Input parsed; frame pushed', frame: frame});
@@ -48,7 +58,7 @@ exports.input_left = (req, res) => {
 exports.input_right = (req, res) => {
     const { id } = req.body;
 
-    games[id].input_lateral(1);
+    games[id].input_right();
     const frame = games[id].getFrame();
 
     return res.status(200).json({ message: 'Input parsed; frame pushed', frame: frame});

@@ -5,7 +5,8 @@
             [[1, 4], [2, 4], [3, 4], [4, 4]]
         ],
         "type_letter": "I",
-        "type_number": "1"
+        "type_number": "1",
+        "pivotIndex": 2
     },
     {
         "pos": [

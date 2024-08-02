@@ -1,3 +1,7 @@
+
+const fs = require('fs').promises;
+const path = require('path');
+
 class Game {
     constructor(id) {
         this.id = id;
@@ -6,6 +10,7 @@ class Game {
         this.height = 20; //rows
         this.status = ""; //init, play, pause, end
         this.nextPolyominoId = 0;
+        this.currentPol = {id: 0, variation: null, type: null};
     }
 
     initBoard() {
@@ -29,16 +34,20 @@ class Game {
 
     async spawnNewPolyomino() {
         const type = Math.ceil(Math.random() * 7);
-        const fs = require('fs').promises;
-        const path = require('path');
+        //const type = 1;
+        this.currentPol.type = type;
 
         try {
             const data = await fs.readFile(path.join(__dirname, '../polyominoes/tetrominoes.json'), 'utf-8');
             const polyominoes = JSON.parse(data);
 
             const newPolyomino = polyominoes[type - 1];
-            const newPolyominoVariations = newPolyomino.pos.length;
-            const newPolyominoPos = newPolyomino.pos[Math.floor(Math.random() * newPolyominoVariations)];
+            const allVariations = newPolyomino.pos.length;
+
+            const newPolyominoVariation = Math.floor(Math.random() * allVariations);
+            this.currentPol.variation = newPolyominoVariation;
+
+            const newPolyominoPos = newPolyomino.pos[newPolyominoVariation];
 
 
             if (newPolyominoPos) {
@@ -59,6 +68,7 @@ class Game {
                     this.board[row][col].pol_id = this.nextPolyominoId;
                 });
                 this.nextPolyominoId++;
+                this.currentPol.id++;
                 
             } else {
                 console.error('Invalid Polyomino type');
@@ -146,20 +156,101 @@ class Game {
         return JSON.parse(JSON.stringify(data));
     }
 
-    input_up() {
+    async getRotatedPolyomino() {
+        try {
+            const data = await fs.readFile(path.join(__dirname, '../polyominoes/tetrominoes.json'), 'utf-8');
+            const polyominoes = JSON.parse(data);
+            //polyominoes[type].pos[variation];
+
+            let translation = {row: null, col: null};
+            const activePolyomino = this.getActivePolyomino();
+
+            const row = activePolyomino[0][0];
+            const col = activePolyomino[0][1];
+
+            const og_row = polyominoes[this.currentPol.type].pos[this.currentPol.variation][0][0];
+            const og_col = polyominoes[this.currentPol.type].pos[this.currentPol.variation][0][1];
+
+            translation.row = row - og_row;
+            translation.col = col - og_col;
+
+            let rotatedPolyomino;
+            if ( this.currentPol.variation >= polyominoes[this.currentPol.type].pos.length - 1) {
+                rotatedPolyomino = polyominoes[this.currentPol.type].pos[0];
+            } else {
+                rotatedPolyomino = polyominoes[this.currentPol.type].pos[this.currentPol.variation + 1];
+                this.currentPol.variation++;
+            }
+
+            let newPolyominoPos = [];
+            for (let i = 0; i < activePolyomino.length; i++) {
+                const tile = rotatedPolyomino[i];
+                newPolyominoPos.push([tile[0] + translation.row, tile[1] + translation.col]);
+            }
+
+            return newPolyominoPos;
+       } catch (error) {
+            console.error('Error reading Polyomino data:', error);
+       }
+    }
+
+    async input_up() {
+        const activePolyomino = this.getActivePolyomino();
+
+        const potentialPos = await this.getRotatedPolyomino();
+
+        if (!this.isValidMove(potentialPos)) {
+            return;
+        }
+
+        const type = this.board[activePolyomino[0][0]][activePolyomino[0][1]].type;
+        const pol_id = this.board[activePolyomino[0][0]][activePolyomino[0][1]].pol_id;
+
+        //remove current polyomino & add new polyomino
+        for (let i = 0; i < this.height; i++) {
+            for (let j = 0; j < this.width; j++) {
+                if (this.board[i][j].pol_id === this.currentPol.id) {
+                    this.board[i][j] = {type: 0, pol_id: null};
+                }
+                for (let k = 0; k < potentialPos.length; k++) {
+                    if (potentialPos[k][0] === i && potentialPos[k][1] === j) {
+                        
+                        this.board[i][j] = {type: type, pol_id: pol_id};
+                    }
+                }
+            }
+        }
 
     }
 
     input_down() {
-
+        this.input_move("down");
     }
 
-    input_lateral(offset) {
+    input_left() {
+        this.input_move("left");
+    }
+
+    input_right() {
+        this.input_move("right");
+    }
+
+    input_move(direction) {
         // find if input is valid
         const potentialPos = this.deepCopy(this.getActivePolyomino());
 
         for (let i = 0; i < potentialPos.length; i++) {
-            potentialPos[i][1] += offset;
+            switch (direction) {
+                case "down":
+                    potentialPos[i][0] += 1;
+                    break;
+                case "left":
+                    potentialPos[i][1] -= 1;
+                    break;
+                case "right":
+                    potentialPos[i][1] += 1;
+                    break;
+            }
         }
 
         if (!this.isValidMove(potentialPos)) {
@@ -179,7 +270,6 @@ class Game {
         for (let i = 0; i < potentialPos.length; i++) {
             this.board[potentialPos[i][0]][potentialPos[i][1]] = {type: type, pol_id: pol_id};
         }
-        
     }
 
     isValidMove(polyminoPos) { //[[r, c], [r, c]...]
