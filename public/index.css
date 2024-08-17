@@ -22,6 +22,8 @@ sup {
 
 .game_tile {
     box-sizing: border-box;
+    border: 1px dashed gray;
+
 }
 
 .game_tile_0 {

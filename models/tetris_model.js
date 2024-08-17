@@ -1,5 +1,4 @@
-
-const fs = require('fs').promises;
+const fs = require('fs');
 const path = require('path');
 
 class Game {
@@ -9,8 +8,11 @@ class Game {
         this.width = 10; //cols
         this.height = 20; //rows
         this.status = ""; //init, play, pause, end
-        this.nextPolyominoId = 0;
-        this.currentPol = {id: 0, variation: null, type: null};
+        this.currentPol = {id: 0, type: null, pivotIndex: null, pivotPoint: null};
+    }
+
+    defaultTile() {
+        return {type: 0, pol_id: null};
     }
 
     initBoard() {
@@ -32,26 +34,27 @@ class Game {
         this.status = "play";
     }
 
-    async spawnNewPolyomino() {
+    spawnNewPolyomino() {
         const type = Math.ceil(Math.random() * 7);
-        //const type = 1;
+        //const type = 1; //for debug
         this.currentPol.type = type;
 
         try {
-            const data = await fs.readFile(path.join(__dirname, '../polyominoes/tetrominoes.json'), 'utf-8');
+            const data = fs.readFileSync(path.join(__dirname, '../polyominoes/tetrominoes.json'), 'utf-8');
             const polyominoes = JSON.parse(data);
 
             const newPolyomino = polyominoes[type - 1];
-            const allVariations = newPolyomino.pos.length;
 
-            const newPolyominoVariation = Math.floor(Math.random() * allVariations);
-            this.currentPol.variation = newPolyominoVariation;
+            const variation = Math.floor(Math.random() * 4);
 
-            const newPolyominoPos = newPolyomino.pos[newPolyominoVariation];
-
+            let newPolyominoPos = newPolyomino.pos;
 
             if (newPolyominoPos) {
-                newPolyominoPos.forEach(pos => {
+                for (let i = 0; i < variation; i++) { //Rotate polyomino
+                    newPolyominoPos = this.getRotatedPolyomino(newPolyominoPos, newPolyomino.pivotPoint);
+                }
+                
+                newPolyominoPos.forEach(pos => { // If the space is taken, end game
                     const row = pos[0];
                     const col = pos[1];
                     
@@ -60,29 +63,30 @@ class Game {
                         return;
                     }
                 });
-                newPolyominoPos.forEach(pos => {
+                newPolyominoPos.forEach(pos => { // Place the polyomino and gve it an id
                     const row = pos[0];
                     const col = pos[1];
                     
                     this.board[row][col].type = type;
-                    this.board[row][col].pol_id = this.nextPolyominoId;
+                    this.board[row][col].pol_id = this.currentPol.id + 1;
                 });
-                this.nextPolyominoId++;
+                this.currentPol.pivotPoint = newPolyomino.pivotPoint;
                 this.currentPol.id++;
-                
+    
             } else {
                 console.error('Invalid Polyomino type');
             }
+    
         } catch (error) {
             console.error('Error reading Polyomino data:', error);
         }
     }
     
     getActivePolyomino() {
-        let activePolyomino = []
+        let activePolyomino = [];
         for (let i = this.height - 1; i >= 0; i--) {
             for (let j = this.width - 1; j >= 0; j--) {
-                if (this.board[i][j].pol_id === this.nextPolyominoId - 1) {
+                if (this.board[i][j].pol_id === this.currentPol.id) {
                     activePolyomino.push([i, j]);
                 }
             }
@@ -109,7 +113,7 @@ class Game {
             return true;
         }
 
-        if (canMove(this.board, this.height, this.nextPolyominoId - 1)) {
+        if (canMove(this.board, this.height, this.currentPol.id)) {
             activePolyomino.forEach(cell => {
                 const row = cell[0];
                 const col = cell[1];
@@ -117,6 +121,7 @@ class Game {
                 this.board[row + 1][col] = this.board[row][col];
                 this.board[row][col] = {type: 0, pol_id: null};
             });
+            this.currentPol.pivotPoint[0]++;
         } else {
             this.spawnNewPolyomino();
         }
@@ -125,18 +130,39 @@ class Game {
 
         //clear line
 
+        let rowsCleared = [];
         for (let i = this.height - 1; i >= 0; i--) {
             if (this.board[i].every(cell => cell.type !== 0)) {
                 for (let j = this.width - 1; j >= 0; j--) {
-                    this.board[i][j].type = 0;
+                    this.board[i][j] = this.defaultTile();
                 }
+                rowsCleared.push(i);
             }
         }
 
+        /*
+        rowsCleared.forEach(row => {
+            const removedRow = this.board.splice(row, 1);
+            this.board.unshift(removedRow);
+        });
+
+        */
+    
         const frame = this.getBoard_typeOnly();
         const status = this.status;
         
         return { frame, frame_preClear, status };
+    }
+
+    boardIsEmpty() {
+        for (let i = 0; i < this.height; i++) {
+            for (let j = 0; j < this.width; j++) {
+                if (this.board[i][j].type !== 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     getBoard_typeOnly() {
@@ -156,71 +182,59 @@ class Game {
         return JSON.parse(JSON.stringify(data));
     }
 
-    async getRotatedPolyomino() {
-        try {
-            const data = await fs.readFile(path.join(__dirname, '../polyominoes/tetrominoes.json'), 'utf-8');
-            const polyominoes = JSON.parse(data);
-            //polyominoes[type].pos[variation];
+    getRotatedPolyomino(polyomino, pivotPoint) {
+        const pivot = {
+            row: pivotPoint[0],
+            col: pivotPoint[1]
+        }
 
-            let translation = {row: null, col: null};
-            const activePolyomino = this.getActivePolyomino();
+        let rotatedPolyomino = [];
 
-            const row = activePolyomino[0][0];
-            const col = activePolyomino[0][1];
+        for (let j = 0; j < polyomino.length; j++) {
+            const row = polyomino[j][0];
+            const col = polyomino[j][1];
+        
+            //position in relation to pivot point
+            const row_offset = row - pivot.row; 
+            const col_offset = col - pivot.col;
 
-            const og_row = polyominoes[this.currentPol.type].pos[this.currentPol.variation][0][0];
-            const og_col = polyominoes[this.currentPol.type].pos[this.currentPol.variation][0][1];
+            const new_row_offset = col_offset;
+            const new_col_offset = row_offset * -1;
 
-            translation.row = row - og_row;
-            translation.col = col - og_col;
+            const new_row = pivot.row + new_row_offset;
+            const new_col = pivot.col + new_col_offset;
 
-            let rotatedPolyomino;
-            if ( this.currentPol.variation >= polyominoes[this.currentPol.type].pos.length - 1) {
-                rotatedPolyomino = polyominoes[this.currentPol.type].pos[0];
-            } else {
-                rotatedPolyomino = polyominoes[this.currentPol.type].pos[this.currentPol.variation + 1];
-                this.currentPol.variation++;
-            }
+            rotatedPolyomino.push([new_row, new_col]);
+        }
 
-            let newPolyominoPos = [];
-            for (let i = 0; i < activePolyomino.length; i++) {
-                const tile = rotatedPolyomino[i];
-                newPolyominoPos.push([tile[0] + translation.row, tile[1] + translation.col]);
-            }
-
-            return newPolyominoPos;
-       } catch (error) {
-            console.error('Error reading Polyomino data:', error);
-       }
+        return rotatedPolyomino;
     }
 
-    async input_up() {
+    input_up() {
         const activePolyomino = this.getActivePolyomino();
 
-        const potentialPos = await this.getRotatedPolyomino();
+        const potentialPos = this.getRotatedPolyomino(activePolyomino, this.currentPol.pivotPoint);
 
         if (!this.isValidMove(potentialPos)) {
             return;
         }
 
-        const type = this.board[activePolyomino[0][0]][activePolyomino[0][1]].type;
-        const pol_id = this.board[activePolyomino[0][0]][activePolyomino[0][1]].pol_id;
-
-        //remove current polyomino & add new polyomino
+        // Remove current polyomino
         for (let i = 0; i < this.height; i++) {
             for (let j = 0; j < this.width; j++) {
                 if (this.board[i][j].pol_id === this.currentPol.id) {
-                    this.board[i][j] = {type: 0, pol_id: null};
-                }
-                for (let k = 0; k < potentialPos.length; k++) {
-                    if (potentialPos[k][0] === i && potentialPos[k][1] === j) {
-                        
-                        this.board[i][j] = {type: type, pol_id: pol_id};
-                    }
+                    this.board[i][j] = { type: 0, pol_id: null };
                 }
             }
         }
 
+        // Add new polyomino
+        const type = this.currentPol.type;
+        const pol_id = this.currentPol.id;
+
+        potentialPos.forEach(([row, col]) => {
+            this.board[row][col] = { type: type, pol_id: pol_id };
+        });
     }
 
     input_down() {
@@ -270,6 +284,18 @@ class Game {
         for (let i = 0; i < potentialPos.length; i++) {
             this.board[potentialPos[i][0]][potentialPos[i][1]] = {type: type, pol_id: pol_id};
         }
+
+        switch (direction) {
+            case "down":
+                this.currentPol.pivotPoint[0]++;
+                break;
+            case "left":
+                this.currentPol.pivotPoint[1]--;
+                break;
+            case "right":
+                this.currentPol.pivotPoint[1]++;
+                break;
+        }
     }
 
     isValidMove(polyminoPos) { //[[r, c], [r, c]...]
@@ -279,7 +305,7 @@ class Game {
             const col = polyminoPos[i][1];
             if (row < 0 || row >= this.height || col < 0 || col >= this.width) {
                 return false;
-            } else if (this.board[row][col].type !== 0 && this.board[row][col].pol_id !== this.nextPolyominoId - 1) {
+            } else if (this.board[row][col].type !== 0 && this.board[row][col].pol_id !== this.currentPol.id) {
                 return false;
             }
         }
