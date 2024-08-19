@@ -84,8 +84,15 @@ class Game {
             for (let j = 0; j < game.b_dimensions.width; j++) {
                 const tileIndex = i * game.b_dimensions.width + j;
 
-                const displayText = frame[i][j] !== 0 ? frame[i][j]: "";
-                board[tileIndex].innerText = displayText;
+                //const displayText = frame[i][j] !== 0 ? frame[i][j]: "";
+                //board[tileIndex].innerText = displayText;
+
+                board[tileIndex].className = "";
+                board[tileIndex].classList.add('game_tile');
+                if (frame[i][j] !== 0) {
+                    board[tileIndex].classList.add('game_tile_active');
+                    board[tileIndex].classList.add(`game_tile_${frame[i][j]}`);
+                }
 
                 //board[]
             }

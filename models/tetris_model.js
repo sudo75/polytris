@@ -50,9 +50,12 @@ class Game {
             let newPolyominoPos = newPolyomino.pos;
 
             if (newPolyominoPos) {
-                for (let i = 0; i < variation; i++) { //Rotate polyomino
-                    newPolyominoPos = this.getRotatedPolyomino(newPolyominoPos, newPolyomino.pivotPoint);
+                if (newPolyomino.pivotPoint) {
+                    for (let i = 0; i < variation; i++) { //Rotate polyomino
+                        newPolyominoPos = this.getRotatedPolyomino(newPolyominoPos, newPolyomino.pivotPoint);
+                    }
                 }
+                
                 
                 newPolyominoPos.forEach(pos => { // If the space is taken, end game
                     const row = pos[0];
@@ -121,7 +124,9 @@ class Game {
                 this.board[row + 1][col] = this.board[row][col];
                 this.board[row][col] = {type: 0, pol_id: null};
             });
-            this.currentPol.pivotPoint[0]++;
+            if (this.currentPol.pivotPoint) {
+                this.currentPol.pivotPoint[0]++;
+            }
         } else {
             this.spawnNewPolyomino();
         }
@@ -211,30 +216,32 @@ class Game {
     }
 
     input_up() {
-        const activePolyomino = this.getActivePolyomino();
+        if (this.currentPol.pivotPoint) {
+            const activePolyomino = this.getActivePolyomino();
 
-        const potentialPos = this.getRotatedPolyomino(activePolyomino, this.currentPol.pivotPoint);
-
-        if (!this.isValidMove(potentialPos)) {
-            return;
-        }
-
-        // Remove current polyomino
-        for (let i = 0; i < this.height; i++) {
-            for (let j = 0; j < this.width; j++) {
-                if (this.board[i][j].pol_id === this.currentPol.id) {
-                    this.board[i][j] = { type: 0, pol_id: null };
+            const potentialPos = this.getRotatedPolyomino(activePolyomino, this.currentPol.pivotPoint);
+    
+            if (!this.isValidMove(potentialPos)) {
+                return;
+            }
+    
+            // Remove current polyomino
+            for (let i = 0; i < this.height; i++) {
+                for (let j = 0; j < this.width; j++) {
+                    if (this.board[i][j].pol_id === this.currentPol.id) {
+                        this.board[i][j] = { type: 0, pol_id: null };
+                    }
                 }
             }
+    
+            // Add new polyomino
+            const type = this.currentPol.type;
+            const pol_id = this.currentPol.id;
+    
+            potentialPos.forEach(([row, col]) => {
+                this.board[row][col] = { type: type, pol_id: pol_id };
+            });
         }
-
-        // Add new polyomino
-        const type = this.currentPol.type;
-        const pol_id = this.currentPol.id;
-
-        potentialPos.forEach(([row, col]) => {
-            this.board[row][col] = { type: type, pol_id: pol_id };
-        });
     }
 
     input_down() {
@@ -285,16 +292,18 @@ class Game {
             this.board[potentialPos[i][0]][potentialPos[i][1]] = {type: type, pol_id: pol_id};
         }
 
-        switch (direction) {
-            case "down":
-                this.currentPol.pivotPoint[0]++;
-                break;
-            case "left":
-                this.currentPol.pivotPoint[1]--;
-                break;
-            case "right":
-                this.currentPol.pivotPoint[1]++;
-                break;
+        if (this.currentPol.pivotPoint) {
+            switch (direction) {
+                case "down":
+                    this.currentPol.pivotPoint[0]++;
+                    break;
+                case "left":
+                    this.currentPol.pivotPoint[1]--;
+                    break;
+                case "right":
+                    this.currentPol.pivotPoint[1]++;
+                    break;
+            }
         }
     }
 

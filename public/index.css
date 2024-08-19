@@ -22,8 +22,6 @@ sup {
 
 .game_tile {
     box-sizing: border-box;
-    border: 1px dashed gray;
-
 }
 
 .game_tile_0 {
@@ -31,13 +29,29 @@ sup {
 }
 
 .game_tile_active {
-    
+    border: 2px solid gray;
+    box-shadow: inset -2px -2px 0 #000,
+    inset 2px 2px 0 lightgray; 
 }
 
 .game_tile_1 {
-    
+    background-color: blue;
 }
-
 .game_tile_2 {
-    
+    background-color: red;
+}
+.game_tile_3 {
+    background-color: green;
+}
+.game_tile_4 {
+    background-color: yellow;
+}
+.game_tile_5 {
+    background-color: orange;
+}
+.game_tile_6 {
+    background-color: purple;
+}
+.game_tile_7 {
+    background-color: lightblue;
 }
