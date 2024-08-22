@@ -35,8 +35,8 @@ class Game {
     }
 
     spawnNewPolyomino() {
-        const type = Math.ceil(Math.random() * 7);
-        //const type = 1; //for debug
+        //const type = Math.ceil(Math.random() * 7);
+        const type = 1; //for debug
         this.currentPol.type = type;
 
         try {
@@ -145,18 +145,31 @@ class Game {
             }
         }
 
+        
         /*
         rowsCleared.forEach(row => {
             const removedRow = this.board.splice(row, 1);
             this.board.unshift(removedRow);
         });
-
         */
+
+        for (let i = 0; i < rowsCleared.length; i++) {
+            this.board.splice(rowsCleared[i], 1);
+            this.board.unshift(this.createEmptyRow());
+        }
     
         const frame = this.getBoard_typeOnly();
         const status = this.status;
         
         return { frame, frame_preClear, status };
+    }
+
+    createEmptyRow() {
+        let row = [];
+        for (let i = 0; i < this.width; i++) {
+            row.push(this.defaultTile());
+        }
+        return row;
     }
 
     boardIsEmpty() {
