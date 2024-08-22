@@ -1,6 +1,6 @@
 {
   "name": "polytris",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Polytris is a recreation of Tetris, with some changes to gameplay.",
   "main": "index.js",
   "scripts": {
