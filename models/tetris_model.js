@@ -1,3 +1,4 @@
+const { clear } = require('console');
 const fs = require('fs');
 const path = require('path');
 
@@ -35,8 +36,8 @@ class Game {
     }
 
     spawnNewPolyomino() {
-        //const type = Math.ceil(Math.random() * 7);
-        const type = 1; //for debug
+        const type = Math.ceil(Math.random() * 7);
+        //const type = 6; //for debug
         this.currentPol.type = type;
 
         try {
@@ -98,8 +99,8 @@ class Game {
     }
 
     pushFrame() {
+        //Spawn new polyomino
         let activePolyomino = this.getActivePolyomino();
-
         function canMove(board, height, currentPolId) {
             for (let i = 0; i < activePolyomino.length; i++) {
                 const cell = activePolyomino[i];
@@ -128,13 +129,22 @@ class Game {
                 this.currentPol.pivotPoint[0]++;
             }
         } else {
+            this.clearLine();
             this.spawnNewPolyomino();
         }
 
         const frame_preClear = this.deepCopy(this.getBoard_typeOnly());
+    
+        const frame = this.getBoard_typeOnly();
+        const status = this.status;
+        
+        //Debug
+        const debug = {pivotPoint: this.currentPol.pivotPoint};
 
-        //clear line
+        return { frame, frame_preClear, status, debug };
+    }
 
+    clearLine() {
         let rowsCleared = [];
         for (let i = this.height - 1; i >= 0; i--) {
             if (this.board[i].every(cell => cell.type !== 0)) {
@@ -145,23 +155,12 @@ class Game {
             }
         }
 
-        
-        /*
-        rowsCleared.forEach(row => {
-            const removedRow = this.board.splice(row, 1);
-            this.board.unshift(removedRow);
-        });
-        */
-
         for (let i = 0; i < rowsCleared.length; i++) {
             this.board.splice(rowsCleared[i], 1);
+        }
+        for (let i = 0; i < rowsCleared.length; i++) {
             this.board.unshift(this.createEmptyRow());
         }
-    
-        const frame = this.getBoard_typeOnly();
-        const status = this.status;
-        
-        return { frame, frame_preClear, status };
     }
 
     createEmptyRow() {
@@ -336,7 +335,8 @@ class Game {
 
     getFrame() {
         const frame = this.getBoard_typeOnly();
-        return frame;
+        const debug = {pivotPoint: this.currentPol.pivotPoint};
+        return { frame: frame, debug: debug };
     }
 }
 

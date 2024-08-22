@@ -55,3 +55,7 @@ sup {
 .game_tile_7 {
     background-color: lightblue;
 }
+
+.debug_pivotPoint {
+    border: 5px solid black;
+}

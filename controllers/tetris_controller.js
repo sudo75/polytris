@@ -21,7 +21,7 @@ exports.reqFrame = (req, res) => {
 
     if (games[id]) {
         const data = games[id].pushFrame();
-        return res.status(200).json({ message: 'Frame pushed', frame: data.frame, frame_preClear: data.frame_preClear, status: data.status});
+        return res.status(200).json({ message: 'Frame pushed', frame: data.frame, frame_preClear: data.frame_preClear, status: data.status, debug: data.debug});
     } else {
         return res.status(404).json({ message: 'Game not found' });
     }
@@ -31,18 +31,18 @@ exports.input_up = (req, res) => {
     const { id } = req.body;
 
     games[id].input_up();
-    const frame = games[id].getFrame();
+    const data = games[id].getFrame();
 
-    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: frame});
+    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: data.frame, debug: data.debug});
 
 }
 exports.input_down = (req, res) => {
     const { id } = req.body;
 
     games[id].input_down();
-    const frame = games[id].getFrame();
+    const data = games[id].getFrame();
 
-    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: frame});
+    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: data.frame, debug: data.debug});
 
 }
 exports.input_left = (req, res) => {
@@ -50,17 +50,17 @@ exports.input_left = (req, res) => {
 
 
     games[id].input_left();
-    const frame = games[id].getFrame();
+    const data = games[id].getFrame();
 
-    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: frame});
+    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: data.frame, debug: data.debug});
 
 }
 exports.input_right = (req, res) => {
     const { id } = req.body;
 
     games[id].input_right();
-    const frame = games[id].getFrame();
+    const data = games[id].getFrame();
 
-    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: frame});
+    return res.status(200).json({ message: 'Input parsed; frame pushed', frame: data.frame, debug: data.debug});
 
 }

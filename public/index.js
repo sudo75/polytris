@@ -14,6 +14,7 @@ class Game {
         this.frameFreq = 500; //ms
         this.id = null;
         this.status = null;
+        this.debugToggle = {highlight_pivotPoint: false};
     }
 
     init() {
@@ -72,12 +73,12 @@ class Game {
             'POST',
             JSON.stringify({ id: this.id }),
             (data) => {
-                this.displayFrame(data.frame, data.frame_preClear, data.status);
+                this.displayFrame(data.frame, data.frame_preClear, data.status, data.debug);
             }
         )
     }
 
-    displayFrame(frame, frame_preClear, status) {
+    displayFrame(frame, frame_preClear, status, debug) {
         const board = document.querySelectorAll('.game_tile');
 
         for (let i = 0; i < game.b_dimensions.height; i++) {
@@ -94,11 +95,20 @@ class Game {
                     board[tileIndex].classList.add(`game_tile_${frame[i][j]}`);
                 }
 
-                //board[]
+                //Debug
+                const pivotPoint = debug.pivotPoint;
+                if (pivotPoint != undefined && this.debugToggle.highlight_pivotPoint) {
+                    if (i === pivotPoint[0] && j === pivotPoint[1]) {
+                        board[tileIndex].classList.add(`debug_pivotPoint`);
+                    }
+                }
+                
+
             }
         }
 
-        this.status = status;    
+        this.status = status;
+
     }
 
     sendReq(url, method, body, callback) {
@@ -171,12 +181,27 @@ function gameLoop() {
 
 document.addEventListener("keydown", (event) => {
     const key = event.key;
+    switch (key) {
+        case 'ArrowUp':
+            break;
+        case 'ArrowDown':
+            break;
+        case 'ArrowLeft':
+            break;
+        case 'ArrowRight':
+            break;
+        default:
+            return;
+    }
+    if (game.status !== "play") {
+        return;
+    }
     game.sendReq(
         `/tetris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight
         'POST',
         JSON.stringify({ id: game.id }),
         (data) => {
-            game.displayFrame(data.frame, null, game.status);
+            game.displayFrame(data.frame, null, game.status, data.debug);
         }
     );
 
