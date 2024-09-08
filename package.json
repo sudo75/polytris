@@ -1,6 +1,6 @@
 {
   "name": "polytris",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Polytris is a recreation of Tetris, with some changes to gameplay.",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "author": "skaf",
+  "author": "sudo75",
   "license": "ISC",
   "dependencies": {
     "express": "^4.19.2",

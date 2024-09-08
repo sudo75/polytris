@@ -4,13 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polytris</title>
-    <link rel="stylesheet" href="./index.css">
+    <link rel="stylesheet" href="./page.css">
+    <link rel="stylesheet" href="./game.css">
+    <link rel="stylesheet" href="./universal.css">
 </head>
 <body>
     <div class="container">
-        <div class="title">Polytris<sup>α</sup></div>
+        <div class="game_container">
+
+            <div class="board_container">
+                <div class="game_overlay"></div>
+                <div class="game_board board_blur">
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn_control" id="btn_left">←</button>
+                <button class="btn btn_control" id="btn_right">→</button>
+                <button class="btn btn_control" id="btn_up">↑</button>
+                <button class="btn btn_control" id="btn_down">↓</button>
+            </div>
+        </div>
+        <div class="game_menu">
+            <div class="title">Polytris<sup style="font-style: italic;">α</sup></div>
+            <div class="game_info">
+                Start a game?
+            </div>
+
+            <div class="game_options">
+                <button class="btn btn_option" id="btn_start">New Game</button>
+                <button class="btn btn_option" id="btn_reset">Load From Save</button>
+
+            </div>
+            <div class="game_stat">
+                <div class="stat stat_score">
+                    <h2 class="stat_head">Score:</h2>
+                    <p class="stat_body" id="stat_body_score">0</p>
+                </div>
+                <hr>
+                <div class="stat stat_linesCleared">
+                    <h2 class="stat_head">Lines Cleared:</h2>
+                    <p class="stat_body" id="stat_body_linesCleared">0</p>
+                </div>
+            </div>
+            
+        </div>        
+
     </div>
-    <button class="btn" id="btn_start">Start</button>
     
     <script src="./index.js"></script>
 

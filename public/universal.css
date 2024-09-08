@@ -1,0 +1,33 @@
+sup {
+    font-size: 50%;
+    font-style: italic;
+}
+
+.btn {
+    height: 40px;
+    margin: 3px;
+    cursor: pointer;
+    border: 1px solid gray;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+
+    user-select: none;
+}
+
+.btn:hover {
+    transform: scale(1.02);
+    border: solid gray 2px;
+    background-color: rgb(230, 230, 230);
+}
+.btn:active {
+    border: solid gray 2px;
+    transform: scale(0.98);
+    background-color: rgb(230, 230, 230);
+}
+
+/*
+.key_active {
+    background-color: rgb(220, 220, 220);
+}
+*/

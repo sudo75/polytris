@@ -1,7 +1,15 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+//const port = 3000;
 const path = require('path');
+
+const port = process.argv[2];
+
+if (!port || isNaN(port) || port <= 0 || port > 65535) {
+    console.error('Invalid or missing port number. Please enter a valid number between 1 and 65535.');
+} else {
+    console.log(`Server will start on port ${port}.`);
+}
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());

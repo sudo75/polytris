@@ -1,4 +1,3 @@
-const { clear } = require('console');
 const fs = require('fs');
 const path = require('path');
 
@@ -9,7 +8,12 @@ class Game {
         this.width = 10; //cols
         this.height = 20; //rows
         this.status = ""; //init, play, pause, end
-        this.currentPol = {id: 0, type: null, pivotIndex: null, pivotPoint: null};
+        this.currentPol = {id: 0, n: null, type: null, pivotIndex: null, pivotPoint: null}; // pivot index depreciated
+        this.stats = {
+            score: 0,
+            linesCleared: 0
+        }
+        this.speed = 400; //ms per frame update
     }
 
     defaultTile() {
@@ -33,15 +37,58 @@ class Game {
         this.board = this.initBoard(width, height);
         this.spawnNewPolyomino();
         this.status = "play";
+        
+        const gameloop = setInterval(() => {
+            
+            if (this.status === 'play') {
+                this.pushFrame();
+            }
+
+        }, this.speed);
+    }
+
+    pause() {
+        this.status = this.status === 'play' ? 'pause': console.warn(`Error: cannot resume from status '${this.status}'`);
+    }
+    resume() {
+        this.status = this.status === 'pause' ? 'play': console.warn(`Error: cannot resume from status '${this.status}'`);
+    }
+
+    reset() {
+        this.status = 'end';
     }
 
     spawnNewPolyomino() {
+
         const type = Math.ceil(Math.random() * 7);
         //const type = 6; //for debug
         this.currentPol.type = type;
 
         try {
-            const data = fs.readFileSync(path.join(__dirname, '../polyominoes/tetrominoes.json'), 'utf-8');
+            let file = "tetrominoes";
+            
+            //const n = Math.ceil(Math.random() * 5);
+            const n = 4;
+            switch (n) {
+                case 1:
+                    file = "monominoes";
+                    break;
+                case 2:
+                    file = "dominoes";
+                    break;
+                case 3:
+                    file = "trominoes";
+                    break;
+                case 4:
+                    file = "tetrominoes";
+                    break;
+                case 5:
+                    file = "pentominoes";
+                    break;
+            }
+            
+
+            const data = fs.readFileSync(path.join(__dirname, `../polyominoes/${file}.json`), 'utf-8');
             const polyominoes = JSON.parse(data);
 
             const newPolyomino = polyominoes[type - 1];
@@ -75,6 +122,7 @@ class Game {
                     this.board[row][col].pol_id = this.currentPol.id + 1;
                 });
                 this.currentPol.pivotPoint = newPolyomino.pivotPoint;
+                this.currentPol.n = n;
                 this.currentPol.id++;
     
             } else {
@@ -99,7 +147,7 @@ class Game {
     }
 
     pushFrame() {
-        //Spawn new polyomino
+        //find if new polyomino needs to be spawned
         let activePolyomino = this.getActivePolyomino();
         function canMove(board, height, currentPolId) {
             for (let i = 0; i < activePolyomino.length; i++) {
@@ -117,6 +165,7 @@ class Game {
             return true;
         }
 
+        //Move or spawn polyomino
         if (canMove(this.board, this.height, this.currentPol.id)) {
             activePolyomino.forEach(cell => {
                 const row = cell[0];
@@ -129,22 +178,14 @@ class Game {
                 this.currentPol.pivotPoint[0]++;
             }
         } else {
+            this.stats.score += this.currentPol.n;
             this.clearLine();
             this.spawnNewPolyomino();
         }
-
-        const frame_preClear = this.deepCopy(this.getBoard_typeOnly());
-    
-        const frame = this.getBoard_typeOnly();
-        const status = this.status;
-        
-        //Debug
-        const debug = {pivotPoint: this.currentPol.pivotPoint};
-
-        return { frame, frame_preClear, status, debug };
     }
 
     clearLine() {
+        //find rows that need to be cleared
         let rowsCleared = [];
         for (let i = this.height - 1; i >= 0; i--) {
             if (this.board[i].every(cell => cell.type !== 0)) {
@@ -153,6 +194,14 @@ class Game {
                 }
                 rowsCleared.push(i);
             }
+        }
+
+        //clear rows
+        this.stats.linesCleared += rowsCleared.length;
+
+        //If a row is cleared, add points
+        if (rowsCleared.length > 0) {
+            this.stats.score += 2 ** (rowsCleared.length - 1) * 50;
         }
 
         for (let i = 0; i < rowsCleared.length; i++) {
@@ -336,7 +385,7 @@ class Game {
     getFrame() {
         const frame = this.getBoard_typeOnly();
         const debug = {pivotPoint: this.currentPol.pivotPoint};
-        return { frame: frame, debug: debug };
+        return { frame: frame, status: this.status, stats: this.stats, debug: debug };
     }
 }
 
