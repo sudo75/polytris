@@ -28,7 +28,9 @@
 .game_tile_active {
     border: 2px solid rgb(20, 20, 20);
     border-radius: 4px;
+
 }
+
 
 
 .game_tile_1 {
@@ -52,6 +54,23 @@
 .game_tile_7 {
     background-color: lightblue;
 }
+.game_tile_8 {
+    background-color: pink;
+}
+.game_tile_9 {
+    background-color: teal;
+}
+.game_tile_10 {
+    background-color: olive;
+}
+.game_tile_11 {
+    background-color: brown;
+}
+.game_tile_12 {
+    background-color: gold;
+}
+
+
 
 .debug_pivotPoint {
     border: 5px solid black;
