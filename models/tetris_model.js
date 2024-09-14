@@ -147,41 +147,45 @@ class Game {
     }
 
     pushFrame() {
-        //find if new polyomino needs to be spawned
-        let activePolyomino = this.getActivePolyomino();
-        function canMove(board, height, currentPolId) {
-            for (let i = 0; i < activePolyomino.length; i++) {
-                const cell = activePolyomino[i];
-                if (cell[0] + 1 < height) {
-                    if (board[cell[0] + 1][cell[1]].type !== 0) {
-                        if (board[cell[0] + 1][cell[1]].pol_id !== currentPolId) {
-                            return false;
-                        }
-                    }
-                } else {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         //Move or spawn polyomino
-        if (canMove(this.board, this.height, this.currentPol.id)) {
-            activePolyomino.forEach(cell => {
-                const row = cell[0];
-                const col = cell[1];
-
-                this.board[row + 1][col] = this.board[row][col];
-                this.board[row][col] = {type: 0, pol_id: null};
-            });
-            if (this.currentPol.pivotPoint) {
-                this.currentPol.pivotPoint[0]++;
-            }
+        if (this.canMove()) {
+            this.gravity();
         } else {
             this.stats.score += this.currentPol.n;
             this.clearLine();
             this.spawnNewPolyomino();
         }
+    }
+
+    gravity() {
+        const activePolyomino = this.getActivePolyomino();
+        activePolyomino.forEach(cell => {
+            const row = cell[0];
+            const col = cell[1];
+
+            this.board[row + 1][col] = this.board[row][col];
+            this.board[row][col] = {type: 0, pol_id: null};
+        });
+        if (this.currentPol.pivotPoint) {
+            this.currentPol.pivotPoint[0]++;
+        }
+    }
+
+    canMove() {
+        const activePolyomino = this.getActivePolyomino();
+        for (let i = 0; i < activePolyomino.length; i++) {
+            const cell = activePolyomino[i];
+            if (cell[0] + 1 < this.height) {
+                if (this.board[cell[0] + 1][cell[1]].type !== 0) {
+                    if (this.board[cell[0] + 1][cell[1]].pol_id !== this.currentPol.id) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 
     clearLine() {
@@ -366,6 +370,16 @@ class Game {
                     break;
             }
         }
+    }
+
+    input_space() {
+        //Hard drop
+        let canDrop = this.canMove();
+        while (canDrop) {
+            this.gravity();
+            canDrop = this.canMove();
+        }
+        
     }
 
     isValidMove(polyminoPos) { //[[r, c], [r, c]...]

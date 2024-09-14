@@ -11,5 +11,6 @@ router.post('/input/ArrowUp', tetris_controller.input_up);
 router.post('/input/ArrowDown', tetris_controller.input_down);
 router.post('/input/ArrowLeft', tetris_controller.input_left);
 router.post('/input/ArrowRight', tetris_controller.input_right);
+router.post('/input/space', tetris_controller.input_space);
 
 module.exports = router;

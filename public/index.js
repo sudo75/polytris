@@ -8,8 +8,8 @@ class Game {
             height: rd_height
         }
         this.b_dimensions = { //block dimensions
-            width: 10,
-            height: 20
+            width: 10, //default = 10
+            height: 20 //default = 20
         }
         this.maxFPS = 20;
         this.frameFreq = 1000 / this.maxFPS; //ms
@@ -17,7 +17,7 @@ class Game {
         this.status = null;
         this.debugToggle = {highlight_pivotPoint: false};
         this.css = {
-            tile_margin: 2,
+            tile_margin: 2, //default = 2
             overlay: {
                 opaquePeriod: 2000,
                 fadePeriod: 500
@@ -297,7 +297,6 @@ class Game {
 const game = new Game(300, 600);
 game.init();
 
-
 ////////////////////////////////////////////////////////////////
 
 //CLICK
@@ -363,7 +362,7 @@ document.addEventListener("keydown", (event) => {
         return;
     }
 
-    const key = event.key;
+    let key = event.key;
     switch (key) {
         case 'ArrowUp':
             document.querySelector('#btn_up').classList.add('key_active');
@@ -377,12 +376,13 @@ document.addEventListener("keydown", (event) => {
         case 'ArrowRight':
             document.querySelector('#btn_right').classList.add('key_active');
             break;
+        case ' ': //Spacebar
+            key = 'space'
+            break;
         default:
             return;
     }
-    
     sendInput(key);
-
 });
 
 document.addEventListener("keyup", (event) => {
@@ -399,7 +399,7 @@ document.addEventListener("keyup", (event) => {
 
 function sendInput(key) {
     game.sendReq(
-        `/tetris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight
+        `/tetris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
         'POST',
         JSON.stringify({ id: game.id }),
         (data) => {
