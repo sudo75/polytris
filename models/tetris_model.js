@@ -39,7 +39,6 @@ class Game {
         this.status = "play";
         
         const gameloop = setInterval(() => {
-            
             if (this.status === 'play') {
                 this.pushFrame();
             }
@@ -60,15 +59,15 @@ class Game {
 
     spawnNewPolyomino() {
 
-        const type = Math.ceil(Math.random() * 7);
+        //let type = Math.ceil(Math.random() * 7);
         //const type = 6; //for debug
-        this.currentPol.type = type;
-
+        //this.currentPol.type = type;
+        
         try {
-            let file = "tetrominoes";
-            
-            //const n = Math.ceil(Math.random() * 5);
-            const n = 4;
+            let file = null;
+
+            const n = Math.ceil(Math.random() * 5);
+            //const n = 5;
             switch (n) {
                 case 1:
                     file = "monominoes";
@@ -87,12 +86,15 @@ class Game {
                     break;
             }
             
-
             const data = fs.readFileSync(path.join(__dirname, `../polyominoes/${file}.json`), 'utf-8');
             const polyominoes = JSON.parse(data);
 
-            const newPolyomino = polyominoes[type - 1];
+            const type = Math.ceil(Math.random() * polyominoes.length); //tile type
+            this.currentPol.type = type;
 
+            const polyominoIndex = type - 1; //index to find new polyomino
+
+            const newPolyomino = polyominoes[polyominoIndex];
             const variation = Math.floor(Math.random() * 4);
 
             let newPolyominoPos = newPolyomino.pos;
