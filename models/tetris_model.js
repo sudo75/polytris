@@ -8,12 +8,33 @@ class Game {
         this.width = 10; //cols
         this.height = 20; //rows
         this.status = ""; //init, play, pause, end
-        this.currentPol = {id: 0, n: null, type: null, pivotIndex: null, pivotPoint: null}; // pivot index depreciated
+        this.currentPol = {id: 0, n: null, type: null, pivotIndex: null, pivotPoint: null}; // pivotIndex depreciated
         this.stats = {
             score: 0,
             linesCleared: 0
         }
         this.speed = 400; //ms per frame update
+        this.eventLog = [];
+        this.startTime = this.getTime();
+    }
+
+    getTime() {
+        return Date.now()
+    }
+
+    createEventLog(log) {
+        this.eventLog.push({ log: log, time: this.getTime() });
+    }
+
+    getLatestEventLogs() {
+        let logs = [];
+        const logsToSend = 20;
+        for (let i = logsToSend + 1; i > 0; i--) {
+            if (this.eventLog[this.eventLog.length - i]) {
+                logs.push(this.eventLog[this.eventLog.length - i]);
+            }
+        }
+        return logs;
     }
 
     defaultTile() {
@@ -67,7 +88,7 @@ class Game {
             let file = null;
 
             const n = Math.ceil(Math.random() * 5);
-            //const n = 5;
+            //const n = 4;
             switch (n) {
                 case 1:
                     file = "monominoes";
@@ -127,6 +148,7 @@ class Game {
                 this.currentPol.n = n;
                 this.currentPol.id++;
     
+                this.createEventLog('new_polyomino');
             } else {
                 console.error('Invalid Polyomino type');
             }
@@ -153,7 +175,6 @@ class Game {
         if (this.canMove()) {
             this.gravity();
         } else {
-            this.stats.score += this.currentPol.n;
             this.clearLine();
             this.spawnNewPolyomino();
         }
@@ -171,6 +192,7 @@ class Game {
         if (this.currentPol.pivotPoint) {
             this.currentPol.pivotPoint[0]++;
         }
+        this.createEventLog('gravity');
     }
 
     canMove() {
@@ -208,6 +230,17 @@ class Game {
         //If a row is cleared, add points
         if (rowsCleared.length > 0) {
             this.stats.score += 2 ** (rowsCleared.length - 1) * 50;
+            switch (rowsCleared.length) {
+                case 1:
+                    this.createEventLog('debug_clear1');
+                    break;
+                case 4:
+                    this.createEventLog('tetris');
+                    break;
+                default:
+                    this.createEventLog('clear');
+                    break;
+            }
         }
 
         for (let i = 0; i < rowsCleared.length; i++) {
@@ -343,6 +376,17 @@ class Game {
 
         if (!this.isValidMove(potentialPos)) {
             return;
+        } else {
+            //if move is valid
+            switch (direction) {
+                case "down": //soft drop
+                    // 25% chance to get a point
+                    const rand = Math.floor(Math.random() * 4)
+                    if (rand === 0) {
+                        this.stats.score += 1;
+                    }
+                    break;
+            }
         }
 
         // move tetromino if valid
@@ -378,6 +422,7 @@ class Game {
         //Hard drop
         let canDrop = this.canMove();
         while (canDrop) {
+            this.stats.score += 1;
             this.gravity();
             canDrop = this.canMove();
         }

@@ -47,7 +47,7 @@ exports.reqFrame = (req, res) => {
     if (games[id]) {
         //games[id].pushFrame();
         const data = games[id].getFrame();
-        return res.status(200).json({ message: 'Frame pushed', frame: data.frame, status: data.status, stats: data.stats, debug: data.debug });
+        return res.status(200).json({ message: 'Frame pushed', frame: data.frame, status: data.status, stats: data.stats, eventLog: games[id].getLatestEventLogs(), debug: data.debug });
     } else {
         return res.status(404).json({ message: 'Game not found' });
     }

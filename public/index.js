@@ -141,12 +141,12 @@ class Game {
             'POST',
             JSON.stringify({ id: this.id }),
             (data) => {
-                this.displayFrame(data.frame, data.status, data.stats, data.debug);
+                this.displayFrame(data.frame, data.status, data.stats, data.eventLog, data.debug);
             }
         );
     }
 
-    displayFrame(frame, status, stats, debug) {
+    displayFrame(frame, status, stats, eventLog, debug) {
         const board = document.querySelectorAll('.game_tile');
 
         //Update board
@@ -213,6 +213,32 @@ class Game {
         if (this.status === "end") {
             this.overlay("Game Over!")
         }
+
+        if (eventLog) {
+            //Event log
+
+            let logsToKeep = [];
+            const currentTime = Date.now();
+            for (let i = 0; i < eventLog.length; i++) {
+                if (currentTime - eventLog[i].time < 50) {
+                    logsToKeep.push(eventLog[i]);
+                }
+            }
+
+            logsToKeep.forEach(log => {
+                switch (log.log) {
+                    case 'tetris':
+                        this.overlay('Tetris');
+                        break;
+                    case 'debug_clear1':
+                        this.overlay('debug_clear1');
+                        console.log('debug_clear1');
+                        break;
+                }
+            });
+            
+        }
+        
 
     }
 
@@ -294,7 +320,7 @@ class Game {
 
 ////////////////////////////////////////////////////////////////
 
-const game = new Game(300, 600);
+const game = new Game(300, 600); //300, 600
 game.init();
 
 ////////////////////////////////////////////////////////////////
@@ -403,7 +429,7 @@ function sendInput(key) {
         'POST',
         JSON.stringify({ id: game.id }),
         (data) => {
-            game.displayFrame(data.frame, data.status, data.stats, data.debug);
+            game.displayFrame(data.frame, data.status, data.stats, null, data.debug);
         }
     );
 }
