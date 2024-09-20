@@ -28,7 +28,9 @@
 .game_tile_active {
     border: 2px solid rgb(20, 20, 20);
     border-radius: 4px;
-
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 
