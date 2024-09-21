@@ -15,7 +15,7 @@ class Game {
         this.frameFreq = 1000 / this.maxFPS; //ms
         this.id = null;
         this.status = null;
-        this.debugToggle = {highlight_pivotPoint: false};
+        this.debugToggle = {highlight_pivotPoint: false, displayText: false};
         this.css = {
             tile_margin: 2, //default = 2
             overlay: {
@@ -155,8 +155,10 @@ class Game {
             for (let j = 0; j < game.b_dimensions.width; j++) {
                 const tileIndex = i * game.b_dimensions.width + j;
 
-                //const displayText = frame[i][j] !== 0 ? frame[i][j]: "";
-                //board[tileIndex].innerText = displayText;
+                if (this.debugToggle.displayText) {
+                    const text = frame[i][j] !== 0 ? frame[i][j]: "";
+                    board[tileIndex].innerText = text;
+                }
 
                 board[tileIndex].className = "";
                 board[tileIndex].classList.add('game_tile');
@@ -230,9 +232,11 @@ class Game {
                     case 'tetris':
                         this.overlay('Tetris');
                         break;
-                    case 'debug_clear1':
-                        this.overlay('debug_clear1');
-                        console.log('debug_clear1');
+                    case 'polytris':
+                        this.overlay('Polytris');
+                        break;
+                    case 'clear':
+                        this.overlay('Line clear');
                         break;
                 }
             });
