@@ -14,7 +14,7 @@
 }
 
 .game_tile_0 {
-
+    
 }
 
 /*
@@ -71,7 +71,24 @@
 .game_tile_12 {
     background-color: gold;
 }
-
+.game_tile_13 {
+    background-color: coral;
+}
+.game_tile_14 {
+    background-color: forestgreen;
+}
+.game_tile_15 {
+    background-color: lightpink;
+}
+.game_tile_16 {
+    background-color: lightgreen;
+}
+.game_tile_17 {
+    background-color: lightseagreen;
+}
+.game_tile_18 {
+    background-color: lightcyan;
+}
 
 
 .debug_pivotPoint {
