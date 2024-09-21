@@ -80,15 +80,10 @@ class Game {
 
     spawnNewPolyomino() {
 
-        //let type = Math.ceil(Math.random() * 7);
-        //const type = 6; //for debug
-        //this.currentPol.type = type;
-        
         try {
             let file = null;
 
             const n = Math.ceil(Math.random() * 5);
-            //const n = 4;
             switch (n) {
                 case 1:
                     file = "monominoes";
@@ -126,7 +121,6 @@ class Game {
                         newPolyominoPos = this.getRotatedPolyomino(newPolyominoPos, newPolyomino.pivotPoint);
                     }
                 }
-                
                 
                 newPolyominoPos.forEach(pos => { // If the space is taken, end game
                     const row = pos[0];
@@ -231,11 +225,11 @@ class Game {
         if (rowsCleared.length > 0) {
             this.stats.score += 2 ** (rowsCleared.length - 1) * 50;
             switch (rowsCleared.length) {
-                case 1:
-                    this.createEventLog('debug_clear1');
-                    break;
                 case 4:
                     this.createEventLog('tetris');
+                    break;
+                case 5:
+                    this.createEventLog('polytris');
                     break;
                 default:
                     this.createEventLog('clear');
