@@ -16,6 +16,7 @@ class Game {
         this.speed = 400; //ms per frame update
         this.eventLog = [];
         this.startTime = this.getTime();
+        this.debug = { gravity: true };
     }
 
     getTime() {
@@ -83,7 +84,8 @@ class Game {
         try {
             let file = null;
 
-            const n = Math.ceil(Math.random() * 5);
+            //const n = Math.ceil(Math.random() * 5);
+            const n = 5;
             switch (n) {
                 case 1:
                     file = "monominoes";
@@ -106,6 +108,7 @@ class Game {
             const polyominoes = JSON.parse(data);
 
             const type = Math.ceil(Math.random() * polyominoes.length); //tile type
+            //const type = 1;
             this.currentPol.type = type;
 
             const polyominoIndex = type - 1; //index to find new polyomino
@@ -175,18 +178,20 @@ class Game {
     }
 
     gravity() {
-        const activePolyomino = this.getActivePolyomino();
-        activePolyomino.forEach(cell => {
-            const row = cell[0];
-            const col = cell[1];
-
-            this.board[row + 1][col] = this.board[row][col];
-            this.board[row][col] = {type: 0, pol_id: null};
-        });
-        if (this.currentPol.pivotPoint) {
-            this.currentPol.pivotPoint[0]++;
+        if (this.debug.gravity) {
+            const activePolyomino = this.getActivePolyomino();
+            activePolyomino.forEach(cell => {
+                const row = cell[0];
+                const col = cell[1];
+    
+                this.board[row + 1][col] = this.board[row][col];
+                this.board[row][col] = {type: 0, pol_id: null};
+            });
+            if (this.currentPol.pivotPoint) {
+                this.currentPol.pivotPoint[0]++;
+            }
+            this.createEventLog('gravity');
         }
-        this.createEventLog('gravity');
     }
 
     canMove() {
