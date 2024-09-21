@@ -236,7 +236,16 @@ class Game {
                         this.overlay('Polytris');
                         break;
                     case 'clear':
-                        this.overlay('Line clear');
+                        this.overlay('Line Clear');
+                        break;
+                    case 'tetris-perfect':
+                        this.overlay('Perfect Tetris');
+                        break;
+                    case 'polytris-perfect':
+                        this.overlay('Perfect Polytris');
+                        break;
+                    case 'clear-perfect':
+                        this.overlay('Perfect Line Clear');
                         break;
                 }
             });
