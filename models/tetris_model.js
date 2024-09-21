@@ -84,8 +84,8 @@ class Game {
         try {
             let file = null;
 
-            //const n = Math.ceil(Math.random() * 5);
-            const n = 5;
+            const n = Math.ceil(Math.random() * 5);
+            //const n = 5;
             switch (n) {
                 case 1:
                     file = "monominoes";
@@ -228,18 +228,50 @@ class Game {
 
         //If a row is cleared, add points
         if (rowsCleared.length > 0) {
-            this.stats.score += 2 ** (rowsCleared.length - 1) * 50;
-            switch (rowsCleared.length) {
-                case 4:
-                    this.createEventLog('tetris');
-                    break;
-                case 5:
-                    this.createEventLog('polytris');
-                    break;
-                default:
-                    this.createEventLog('clear');
-                    break;
+            let points = 2 ** (rowsCleared.length - 1) * 50;
+
+            //perfect clear
+            let isPerfectClear = true;
+            for (let i = 0; i < this.height; i++) {
+                for (let j = 0; j < this.width; j++) {
+                    if (this.board[i][j].type !== 0) {
+                        isPerfectClear = false;
+                        continue;
+                    }
+                }    
             }
+
+            if (isPerfectClear) {
+                points *= 2;
+            }
+
+            this.stats.score += points;
+            if (isPerfectClear) {
+                switch (rowsCleared.length) {
+                    case 4:
+                        this.createEventLog('tetris-perfect');
+                        break;
+                    case 5:
+                        this.createEventLog('polytris-perfect');
+                        break;
+                    default:
+                        this.createEventLog('clear-perfect');
+                        break;
+                }
+            } else {
+                switch (rowsCleared.length) {
+                    case 4:
+                        this.createEventLog('tetris');
+                        break;
+                    case 5:
+                        this.createEventLog('polytris');
+                        break;
+                    default:
+                        this.createEventLog('clear');
+                        break;
+                }
+            }
+            
         }
 
         for (let i = 0; i < rowsCleared.length; i++) {
