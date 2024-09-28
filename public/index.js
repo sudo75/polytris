@@ -200,7 +200,8 @@ class Game {
                 break;
             default:
                 btn_start.innerText = 'New Game';
-                btn_reset.innerText = 'Load From Save';
+                //btn_reset.innerText = 'Load From Save';
+                btn_reset.innerText = '';
                 game_info.innerText = this.fetchInfoText();
                 break;
         }
