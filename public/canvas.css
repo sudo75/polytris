@@ -1,0 +1,8 @@
+.container {
+    display: flex;
+    flex-direction: column;
+}
+
+.board {
+    border: 1px solid black;
+}
