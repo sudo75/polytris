@@ -4,6 +4,7 @@ const path = require('path');
 class Game {
     constructor(id) {
         this.id = id;
+        this.key = this.generateKey();
         this.board = [];
         this.width = 10; //cols
         this.height = 20; //rows
@@ -17,6 +18,19 @@ class Game {
         this.eventLog = [];
         this.startTime = this.getTime();
         this.debug = { gravity: true };
+    }
+
+    generateKey() {
+        const validChars = 'QWERTYUIOOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890!@#$%^&*(()_+-=[]?';
+
+        let key = '';
+        const keyLength = 50 + Math.floor(Math.random() * 50); // 50 - 100 char str
+        for (let i = 0; i < keyLength; i++) {
+            const charIndex = Math.floor(Math.random() * validChars.length);
+            key += validChars[charIndex];
+        }
+
+        return key;        
     }
 
     getTime() {
