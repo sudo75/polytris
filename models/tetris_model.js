@@ -11,10 +11,11 @@ class Game {
         this.status = ""; //init, play, pause, end
         this.currentPol = {id: 0, n: null, type: null, pivotIndex: null, pivotPoint: null}; // pivotIndex depreciated
         this.stats = {
+            level: 0,
             score: 0,
             linesCleared: 0
         }
-        this.speed = 400; //ms per frame update
+        this.speed = [400, 370, 340, 310, 280, 250, 220, 190, 160, 130, 100]; //ms per frame update - 11 levels
         this.eventLog = [];
         this.startTime = this.getTime();
         this.debug = { gravity: true };
@@ -73,13 +74,15 @@ class Game {
         this.board = this.initBoard(width, height);
         this.spawnNewPolyomino();
         this.status = "play";
+
+        const speed = this.stats.level < this.speed.length? this.speed[this.stats.level]: this.speed[this.speed.length - 1];
         
         const gameloop = setInterval(() => {
             if (this.status === 'play') {
                 this.pushFrame();
             }
 
-        }, this.speed);
+        }, speed);
     }
 
     pause() {
@@ -240,6 +243,10 @@ class Game {
         //clear rows
         this.stats.linesCleared += rowsCleared.length;
 
+        //Level code
+        
+        //this.updateLevel();
+
         //If a row is cleared, add points
         if (rowsCleared.length > 0) {
             let points = 2 ** (rowsCleared.length - 1) * 50;
@@ -294,6 +301,10 @@ class Game {
         for (let i = 0; i < rowsCleared.length; i++) {
             this.board.unshift(this.createEmptyRow());
         }
+    }
+
+    updateLevel() {
+        this.stats.level = Math.floor(this.stats.linesCleared / 10);
     }
 
     createEmptyRow() {
