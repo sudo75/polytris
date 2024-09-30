@@ -3,6 +3,13 @@ console.log('public JS running!');
 const canvas = document.querySelector('.board');
 const ctx = canvas.getContext("2d");
 
+const canvas_hud = document.querySelector('.hud');
+const ctx_hud = canvas_hud.getContext("2d");
+
+const canvas_overlay = document.querySelector('.overlay');
+const ctx_overlay = canvas_overlay.getContext("2d");
+
+
 class Game {
     constructor(rd_width, rd_height) {
         this.r_dimensions = { //real dimensions
@@ -32,11 +39,32 @@ class Game {
             objects: []
         }
         this.listeners = [];
+        this.overlay = {
+            properties: {
+                opaquePeriod: 2000,
+                fadePeriod: 500
+            },
+            time: {
+                latestInset: null
+            },
+            open: false,
+            opacity: 1
+        }
     }
 
     init() {
         canvas.width = this.r_dimensions.width;
         canvas.height = this.r_dimensions.height;
+
+        canvas_hud.width = this.r_dimensions.width;
+        canvas_hud.height = this.r_dimensions.height;
+
+        canvas_overlay.width = this.r_dimensions.width;
+        canvas_overlay.height = this.r_dimensions.height;
+
+        const canvas_container = document.querySelector('.canvas_container');
+        canvas_container.style.width = `${this.r_dimensions.width}px`;
+        canvas_container.style.height = `${this.r_dimensions.height}px`;
     }
 
     openMenu() {
@@ -194,16 +222,54 @@ class Game {
         ctx.fillRect(offsetWidth, offsetHeight, width, height);
     }
 
+    drawOverlay(text) { //DOES NOT CLEAR REGION
+        this.overlay.open = true;
+
+        ctx_overlay.font = '16px Arial';
+        ctx_overlay.fillStyle = `rgba(0, 0, 0, 1)`;
+
+        const textWidth = ctx_overlay.measureText(text).width;
+        const centerX = (this.r_dimensions.width - textWidth) / 2;
+        ctx_overlay.fillText(`${text}`, centerX, 20);
+
+        const fadeText = (opacityReduction) => {
+            ctx_overlay.clearRect(0, 0, canvas_overlay.width, canvas_overlay.height);
+            this.overlay.opacity -= opacityReduction;
+            ctx_overlay.fillStyle = `rgba(0, 0, 0, ${this.overlay.opacity})`;
+            ctx_overlay.fillText(`${text}`, centerX, 20);
+        }
+
+        setTimeout(() => {
+
+            const fps = 20;
+            const opacityReduction = (1000 / fps) / this.overlay.properties.fadePeriod;
+
+            const fadeCaller = setInterval(() => {
+                fadeText(opacityReduction);
+            }, 1000 / fps);
+
+            
+            setTimeout(() => {
+                clearInterval(fadeCaller);
+                this.overlay.open = false;
+                this.overlay.opacity = 1;
+
+                ctx_overlay.fillStyle = `rgba(0, 0, 0, 1)`;
+
+            }, this.overlay.properties.fadePeriod);
+            
+        }, this.overlay.properties.opaquePeriod);
+    }
+
     displayFrame(frame, status, stats, eventLog, debug) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         const board = document.querySelectorAll('.game_tile');
 
         //Update board
 
         for (let i = 0; i < game.b_dimensions.height; i++) {
             for (let j = 0; j < game.b_dimensions.width; j++) {
-                const tileIndex = i * game.b_dimensions.width + j;
                 if (frame[i][j] !== 0) {
                     this.drawTile(i, j);
                 }
@@ -215,11 +281,20 @@ class Game {
 
 
         //Update stats
+        
+        ctx_hud.clearRect(0, 0, canvas_hud.width, canvas_hud.height);
 
+        ctx_hud.font = '16px Arial';
+        ctx_hud.fillStyle = 'blue';
+
+        const stat_keys = Object.keys(stats);
+        stat_keys.forEach((key, i) => {
+            ctx_hud.fillText(`${key}: ${stats[key]}`, 10, 50 + i * 30);
+        });
 
         //Game messages
         if (this.status === "end") {
-            //this.overlay("Game Over!")
+            this.drawOverlay("Game Over!")
         }
 
         if (eventLog) {
@@ -236,22 +311,22 @@ class Game {
             logsToKeep.forEach(log => {
                 switch (log.log) {
                     case 'tetris':
-                        //this.overlay('Tetris');
+                        this.drawOverlay('Tetris');
                         break;
                     case 'polytris':
-                        //this.overlay('Polytris');
+                        this.drawOverlay('Polytris');
                         break;
                     case 'clear':
-                        //this.overlay('Line Clear');
+                        this.drawOverlay('Line Clear');
                         break;
                     case 'tetris-perfect':
-                        //this.overlay('Perfect Tetris');
+                        this.drawOverlay('Perfect Tetris');
                         break;
                     case 'polytris-perfect':
-                        //this.overlay('Perfect Polytris');
+                        this.drawOverlay('Perfect Polytris');
                         break;
                     case 'clear-perfect':
-                        //this.overlay('Perfect Line Clear');
+                        this.drawOverlay('Perfect Line Clear');
                         break;
                 }
             });
@@ -349,7 +424,7 @@ game.openMenu();
 function gameLoop() {
     if (game.status === "end") {
         //game.endSequence();
-        game.requestNewFrame();
+        //game.requestNewFrame();
         return;
     }
 
@@ -368,16 +443,12 @@ document.addEventListener("keydown", (event) => {
     let key = event.key;
     switch (key) {
         case 'ArrowUp':
-            document.querySelector('#btn_up').classList.add('key_active');
             break;
         case 'ArrowDown':
-            document.querySelector('#btn_down').classList.add('key_active');
             break;
         case 'ArrowLeft':
-            document.querySelector('#btn_left').classList.add('key_active');
             break;
         case 'ArrowRight':
-            document.querySelector('#btn_right').classList.add('key_active');
             break;
         case ' ': //Spacebar
             key = 'space'
@@ -392,11 +463,6 @@ document.addEventListener("keyup", (event) => {
     //clear key press btn indication
 
     //list of ids to clear
-    const clear_ids = ['btn_up', 'btn_down', 'btn_left', 'btn_right'];
-    
-    clear_ids.forEach(id => {
-        document.querySelector(`#${id}`).classList.remove('key_active');
-    });
 
 });
 
