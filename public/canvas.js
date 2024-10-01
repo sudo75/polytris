@@ -48,7 +48,9 @@ class Game {
                 latestInset: null
             },
             open: false,
-            opacity: 1
+            text: '',
+            opacity: 1,
+            timers: []
         }
     }
 
@@ -223,33 +225,52 @@ class Game {
     }
 
     drawOverlay(text) { //DOES NOT CLEAR REGION
+        ctx_overlay.clearRect(0, 0, canvas_overlay.width, canvas_overlay.height);
+        this.overlay.timers.forEach(({type, timer}) => {
+            switch (type) {
+                case 'interval':
+                    clearInterval(timer);
+                    break;
+                case 'timeout':
+                    clearTimeout(timer);
+                    break;
+            }
+        });
+
+
+        this.overlay.text = text;
+        this.overlay.opacity = 1;
+        
         this.overlay.open = true;
 
         ctx_overlay.font = '16px Arial';
         ctx_overlay.fillStyle = `rgba(0, 0, 0, 1)`;
 
-        const textWidth = ctx_overlay.measureText(text).width;
+        const textWidth = ctx_overlay.measureText(this.overlay.text).width;
         const centerX = (this.r_dimensions.width - textWidth) / 2;
-        ctx_overlay.fillText(`${text}`, centerX, 20);
+        ctx_overlay.fillText(`${this.overlay.text}`, centerX, 20);
 
         const fadeText = (opacityReduction) => {
             ctx_overlay.clearRect(0, 0, canvas_overlay.width, canvas_overlay.height);
             this.overlay.opacity -= opacityReduction;
             ctx_overlay.fillStyle = `rgba(0, 0, 0, ${this.overlay.opacity})`;
-            ctx_overlay.fillText(`${text}`, centerX, 20);
+            ctx_overlay.fillText(`${this.overlay.text}`, centerX, 20);
         }
 
-        setTimeout(() => {
+        let fadeCaller;
+        let fadeTimeout; //give higher scope
+
+        const opaqueTimeout = setTimeout(() => {
 
             const fps = 20;
             const opacityReduction = (1000 / fps) / this.overlay.properties.fadePeriod;
 
-            const fadeCaller = setInterval(() => {
+            fadeCaller = setInterval(() => {
                 fadeText(opacityReduction);
             }, 1000 / fps);
 
             
-            setTimeout(() => {
+            fadeTimeout = setTimeout(() => {
                 clearInterval(fadeCaller);
                 this.overlay.open = false;
                 this.overlay.opacity = 1;
@@ -259,6 +280,8 @@ class Game {
             }, this.overlay.properties.fadePeriod);
             
         }, this.overlay.properties.opaquePeriod);
+
+        this.overlay.timers.push({type: 'interval', timer: fadeCaller}, {type: 'timeout', timer: opaqueTimeout}, {type: 'timeout', timer: fadeTimeout});
     }
 
     displayFrame(frame, status, stats, eventLog, debug) {
@@ -451,7 +474,7 @@ document.addEventListener("keydown", (event) => {
         case 'ArrowRight':
             break;
         case ' ': //Spacebar
-            key = 'space'
+            key = 'space';
             break;
         default:
             return;
