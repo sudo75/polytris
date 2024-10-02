@@ -86,3 +86,10 @@ html {
 hr {
     width: 80%;
 }
+
+.link {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: center;
+}
