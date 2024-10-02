@@ -34,8 +34,14 @@ class Game {
         };
         this.mouseDown = false;
         this.menu_btns = {
-            text: ['New Game', '-'],
-            functions: [() => this.start()],
+            text: ['New Game', '-', 'Standard Rendering'],
+            functions: [
+                () => this.start(),
+                null,
+                () => {
+                    window.location.href = './index.html';
+                }
+            ],
             objects: []
         }
         this.listeners = [];
@@ -371,7 +377,7 @@ class Button {
         this.d_current = {width: this.width.default, height: this.height.default, x: this.x.default, y: this.y.default};
 
         this.text = text;
-        this.fontSize = 20;
+        this.fontSize = 16;
         this.mouseState = 'default'; // in relation to btn
         this.btnState = 'default';
     }
