@@ -4,22 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polytris</title>
-    <link rel="stylesheet" href="./page.css">
+    <link rel="stylesheet" href="../page.css">
     <link rel="stylesheet" href="./canvas.css">
-    <link rel="stylesheet" href="./universal.css">
+    <link rel="stylesheet" href="../universal.css">
 </head>
 <body>
     <div class="container">
 
         <div class="canvas_container">
+            
+            <!--
             <canvas class="board"></canvas>
+            <canvas class="controls"></canvas>
             <canvas class="hud"></canvas>
             <canvas class="overlay"></canvas>
+            -->
+
+            <canvas class="canvas" style="border: 1px solid black;"></canvas>
         </div>
 
     </div>
     
-    <script src="./canvas.js"></script>
+    <!-- <script src="./canvas.js"></script> -->
+    <script type="module" src="https://sudo75.github.io/canvas-functions/menu_renderer.js"></script>
+    <script type="module" src="canvas.js"></script>
 
 </body>
 </html>

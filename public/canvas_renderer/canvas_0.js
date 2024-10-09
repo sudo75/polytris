@@ -3,6 +3,9 @@ console.log('public JS running!');
 const canvas = document.querySelector('.board');
 const ctx = canvas.getContext("2d");
 
+const canvas_controls = document.querySelector('.controls');
+const ctx_controls = canvas_controls.getContext("2d");
+
 const canvas_hud = document.querySelector('.hud');
 const ctx_hud = canvas_hud.getContext("2d");
 
@@ -39,7 +42,7 @@ class Game {
                 () => this.start(),
                 null,
                 () => {
-                    window.location.href = './index.html';
+                    window.location.href = '../index.html';
                 }
             ],
             objects: []
@@ -63,6 +66,9 @@ class Game {
     init() {
         canvas.width = this.r_dimensions.width;
         canvas.height = this.r_dimensions.height;
+
+        canvas_controls.width = this.r_dimensions.width;
+        canvas_controls.height = this.r_dimensions.height;
 
         canvas_hud.width = this.r_dimensions.width;
         canvas_hud.height = this.r_dimensions.height;
@@ -293,10 +299,7 @@ class Game {
     displayFrame(frame, status, stats, eventLog, debug) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const board = document.querySelectorAll('.game_tile');
-
         //Update board
-
         for (let i = 0; i < game.b_dimensions.height; i++) {
             for (let j = 0; j < game.b_dimensions.width; j++) {
                 if (frame[i][j] !== 0) {
@@ -308,6 +311,17 @@ class Game {
         //Update status
         this.status = status;
 
+        //Display controls
+        ctx_controls.clearRect(0, 0, canvas_controls.width, canvas_controls.height);
+        const btn = new Button(canvas_controls.width - 50, 200, 40, 40, '*');
+        btn.draw(ctx);
+
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;btn.updateMouseState(mouseX, mouseY, this.mouseDown);
+    
+        if (btn.mouseState !== btn.btnState) {
+            btn.draw(ctx);
+        }
 
         //Update stats
         

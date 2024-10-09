@@ -30,12 +30,17 @@ html, body {
     border: 1px solid black;
 }
 
-.hud {
+.controls {
     z-index: 2;
     pointer-events: none;
 }
 
-.overlay {
+.hud {
     z-index: 3;
+    pointer-events: none;
+}
+
+.overlay {
+    z-index: 4;
     pointer-events: none;
 }
