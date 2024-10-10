@@ -17,7 +17,7 @@ html, body {
     position: relative;
 }
 
-.board, .hud, .overlay {
+.board, .hud, .overlay, .controls, .menu {
     position: absolute;
     top: 0;
     left: 0;
@@ -43,4 +43,10 @@ html, body {
 .overlay {
     z-index: 4;
     pointer-events: none;
+}
+
+.menu {
+    z-index: 20;
+    border: 1px solid black;
+    pointer-events: auto;
 }
