@@ -11,7 +11,7 @@ class Game {
         this.btns = [
             {txt: ['Start'], callback: this.start.bind(this)},
             {txt: ['Standard Rendering'], callback: this.useStandardRenderer.bind(this)},
-            {txt: ['CC1', 'CC2', 'CC3'], callback: this.default_callback.bind(this)},
+            {txt: ['CC1', 'CC2', 'CC3'], callback: this.default_callback.bind(this)}
         ];
         this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering (alpha)', 'v.0.4.0-dev', this.btns, width, height, this.canvas_menu);
     }
@@ -38,12 +38,6 @@ class Game {
 
     openMenu() {
         document.querySelector('.menu').style.opactiy = '1';
-
-        const btns = [
-            {txt: ['Start'], callback: this.start.bind(this)},
-            {txt: ['Standard Rendering'], callback: this.useStandardRenderer.bind(this)},
-            {txt: ['CC1', 'CC2', 'CC3'], callback: this.default_callback.bind(this)},
-        ];
         const canvas_container = document.querySelector('.canvas_container');
         canvas_container.style.width = '300px';
         canvas_container.style.height = '600px';

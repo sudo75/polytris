@@ -30,19 +30,19 @@ html, body {
     border: 1px solid black;
 }
 
-.controls {
+.hud {
     z-index: 2;
     pointer-events: none;
 }
 
-.hud {
+.overlay {
     z-index: 3;
     pointer-events: none;
 }
 
-.overlay {
+.controls {
     z-index: 4;
-    pointer-events: none;
+    pointer-events: auto;
 }
 
 .menu {

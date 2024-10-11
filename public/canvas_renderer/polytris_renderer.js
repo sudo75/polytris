@@ -12,6 +12,8 @@ const ctx_hud = canvas_hud.getContext("2d");
 const canvas_overlay = document.querySelector('.overlay');
 const ctx_overlay = canvas_overlay.getContext("2d");
 
+import {Btn_Menu} from 'https://sudo75.github.io/canvas-functions/btn_menu.js';
+import {Game_Option_Menu} from './game_option_menu.js';
 
 class Renderer {
     constructor(rd_width, rd_height) {
@@ -36,17 +38,6 @@ class Renderer {
             }
         };
         this.mouseDown = false;
-        this.menu_btns = {
-            text: ['New Game', '-', 'Standard Rendering'],
-            functions: [
-                () => this.start(),
-                null,
-                () => {
-                    window.location.href = '../index.html';
-                }
-            ],
-            objects: []
-        }
         this.listeners = [];
         this.overlay = {
             properties: {
@@ -61,6 +52,55 @@ class Renderer {
             opacity: 1,
             timers: []
         }
+
+        //Main Menu
+        this.menu_btns = {
+            text: ['New Game', '-', 'Standard Rendering'],
+            functions: [
+                () => this.start(),
+                null,
+                () => {
+                    window.location.href = '../index.html';
+                }
+            ],
+            objects: []
+        };
+
+        //In-game quick controls
+        this.quickControlBtns = [
+            {txt: ['⚙'], callback: () => {
+                    if (this.status === 'play') {
+                        this.pause();
+                    }
+                    this.openGameControlMenu();
+                }
+                
+            },
+            {txt: ['⏯'], callback: () => {
+                    if (this.status === 'pause') {
+                        this.resume();
+                    } else if (this.status === 'play') {
+                        this.pause();
+                    }
+                }
+            }
+        ];
+        this.quickControlMenu = null;
+
+        //In game menu - control/settings
+        this.gameControlBtns = [
+            {txt: ['Return'], callback: this.closeGameControlMenu.bind(this)}
+        ];
+        this.gameControlMenu = new Game_Option_Menu(canvas_controls, ctx_controls, this.gameControlBtns, this.r_dimensions.width, this.r_dimensions.height);
+
+        //Main settings Menu
+
+
+        //Death screen menu
+        this.endMenuBtns = [
+            {txt: ['Main Menu'], callback: this.closeEndMenu.bind(this)}
+        ];
+        this.endMenu = new Game_Option_Menu(canvas_controls, ctx_controls, this.endMenuBtns, this.r_dimensions.width, this.r_dimensions.height);
     }
 
     init() {
@@ -125,9 +165,24 @@ class Renderer {
         }
     }
 
-    start(id) {
-        console.log('start!');
+    loadQuickControlBtns() {
+        ctx_controls.clearRect(0, 0, canvas_controls.width, canvas_controls.height);
+        this.quickControlMenu = new Btn_Menu(canvas_controls, ctx_controls, this.quickControlBtns, canvas_controls.width - 40 - 5, 5);
 
+        this.quickControlMenu.btn_dimensions.width = 40;
+        this.quickControlMenu.btn_dimensions.height = 40;
+        this.quickControlMenu.init();
+    }
+
+    unloadQuickControlBtns() {
+        ctx_controls.clearRect(0, 0, canvas_controls.width, canvas_controls.height);
+        this.quickControlMenu.removeListeners();
+    }
+
+    start(id) {
+        this.loadQuickControlBtns();
+
+        //Send Start Request
         fetch(`../tetris/start`, {
             method: "POST",
             headers: {
@@ -154,6 +209,18 @@ class Renderer {
         });
     }
 
+    openGameControlMenu() {
+        this.unloadQuickControlBtns();
+        this.gameControlMenu.open();
+    }
+
+    closeGameControlMenu() {
+        this.gameControlMenu.close();
+        
+        this.loadQuickControlBtns();
+        this.resume();
+    }
+
     sendReq(url, method, body, callback) {
         fetch(`${url}`, { //use /tetris/xyz format
             method: `${method}`,
@@ -176,8 +243,43 @@ class Renderer {
         });
     }
 
+    pause() {
+        this.sendReq(
+            '../tetris/setStatus',
+            'POST',
+            JSON.stringify({ id: this.id, status: 'pause' }),
+            (data) => {
+                console.log(data.message);
+
+                this.status = data.status;
+            }
+        );
+    }
+
+    resume() {
+        this.sendReq(
+            '../tetris/setStatus',
+            'POST',
+            JSON.stringify({ id: this.id, status: 'resume' }),
+            (data) => {
+                console.log(data.message);
+
+                this.status = data.status;
+            }
+        );
+    }
+
+    endSequence() {
+        this.endMenu.open();
+    }
+
+    closeEndMenu() {
+        this.endMenu.close();
+    }
+
     gameLoop() {
         if (this.status === "end") {
+            this.endSequence();
             return;
         }
     
@@ -266,6 +368,10 @@ class Renderer {
         this.overlay.timers.push({type: 'interval', timer: fadeCaller}, {type: 'timeout', timer: opaqueTimeout}, {type: 'timeout', timer: fadeTimeout});
     }
 
+    default_callback() {
+        console.log('callback: defaulted');
+    }
+
     displayFrame(frame, status, stats, eventLog, debug) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -281,23 +387,7 @@ class Renderer {
         //Update status
         this.status = status;
 
-        //Display controls
-        ctx_controls.clearRect(0, 0, canvas_controls.width, canvas_controls.height);
-        
-        /*
-        const btn = new Button(canvas_controls.width - 50, 200, 40, 40, '*');
-        btn.draw(ctx);
-
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;btn.updateMouseState(mouseX, mouseY, this.mouseDown);
-    
-        if (btn.mouseState !== btn.btnState) {
-            btn.draw(ctx);
-        }
-        */
-
         //Update stats
-        
         ctx_hud.clearRect(0, 0, canvas_hud.width, canvas_hud.height);
 
         ctx_hud.font = '16px Arial';
@@ -352,26 +442,5 @@ class Renderer {
 
     }
 }
-
-/*
-const game = new Renderer(300, 600);
-game.init();
-
-//RUN GAME
-function gameLoop() {
-    if (game.status === "end") {
-        //game.endSequence();
-        //game.requestNewFrame();
-        return;
-    }
-
-    game.requestNewFrame();
-    
-    setTimeout(gameLoop, game.frameFreq);
-}
-
-*/
-
-
 
 export { Renderer };
