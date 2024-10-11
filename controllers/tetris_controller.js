@@ -35,7 +35,7 @@ exports.setStatus = (req, res) => {
         if (typeof games[id][status] === 'function') {
             games[id][status]();
         }
-        return res.status(200).json({ message: `Game status set to ${status}`, status: status });
+        return res.status(200).json({ message: `Game status set to ${games[id].status}`, status: games[id].status });
     } else {
         return res.status(200).json({ message: 'Game ID not found.' });
     }
