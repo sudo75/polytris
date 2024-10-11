@@ -16,7 +16,7 @@ import {Btn_Menu} from 'https://sudo75.github.io/canvas-functions/btn_menu.js';
 import {Game_Option_Menu} from './game_option_menu.js';
 
 class Renderer {
-    constructor(rd_width, rd_height) {
+    constructor(rd_width, rd_height, btns) {
         this.r_dimensions = { //real dimensions
             width: rd_width,
             height: rd_height
@@ -53,54 +53,17 @@ class Renderer {
             timers: []
         }
 
-        //Main Menu
-        this.menu_btns = {
-            text: ['New Game', '-', 'Standard Rendering'],
-            functions: [
-                () => this.start(),
-                null,
-                () => {
-                    window.location.href = '../index.html';
-                }
-            ],
-            objects: []
-        };
-
         //In-game quick controls
-        this.quickControlBtns = [
-            {txt: ['⚙'], callback: () => {
-                    if (this.status === 'play') {
-                        this.pause();
-                    }
-                    this.openGameControlMenu();
-                }
-                
-            },
-            {txt: ['⏯'], callback: () => {
-                    if (this.status === 'pause') {
-                        this.resume();
-                    } else if (this.status === 'play') {
-                        this.pause();
-                    }
-                }
-            }
-        ];
+        this.quickControlBtns = btns.quickControlBtns;
         this.quickControlMenu = null;
 
         //In game menu - control/settings
-        this.gameControlBtns = [
-            {txt: ['Return'], callback: this.closeGameControlMenu.bind(this)}
-        ];
-        this.gameControlMenu = new Game_Option_Menu(canvas_controls, ctx_controls, this.gameControlBtns, this.r_dimensions.width, this.r_dimensions.height);
-
-        //Main settings Menu
-
+        this.gameControlBtns = btns.gameControlBtns;
+        this.gameControlMenu = new Game_Option_Menu(canvas_controls, ctx_controls, 'Options', this.gameControlBtns, this.r_dimensions.width, this.r_dimensions.height);
 
         //Death screen menu
-        this.endMenuBtns = [
-            {txt: ['Main Menu'], callback: this.closeEndMenu.bind(this)}
-        ];
-        this.endMenu = new Game_Option_Menu(canvas_controls, ctx_controls, this.endMenuBtns, this.r_dimensions.width, this.r_dimensions.height);
+        this.endMenuBtns = btns.endMenuBtns;
+        this.endMenu = new Game_Option_Menu(canvas_controls, ctx_controls, 'Game Over', this.endMenuBtns, this.r_dimensions.width, this.r_dimensions.height);
     }
 
     init() {
@@ -119,50 +82,6 @@ class Renderer {
         const canvas_container = document.querySelector('.canvas_container');
         canvas_container.style.width = `${this.r_dimensions.width}px`;
         canvas_container.style.height = `${this.r_dimensions.height}px`;
-
-        //Event listeners
-
-        document.addEventListener("keydown", (event) => {
-            if (this.status !== "play") {
-                return;
-            }
-        
-            let key = event.key;
-            switch (key) {
-                case 'ArrowUp':
-                    break;
-                case 'ArrowDown':
-                    break;
-                case 'ArrowLeft':
-                    break;
-                case 'ArrowRight':
-                    break;
-                case ' ': //Spacebar
-                    key = 'space';
-                    break;
-                default:
-                    return;
-            }
-            sendInput(key);
-        });
-        
-        document.addEventListener("keyup", (event) => {
-            //clear key press btn indication
-        
-            //list of ids to clear
-        
-        });
-        
-        const sendInput = (key) => {
-            this.sendReq(
-                `/tetris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
-                'POST',
-                JSON.stringify({ id: this.id }),
-                (data) => {
-                    this.displayFrame(data.frame, data.status, data.stats, null, data.debug);
-                }
-            );
-        }
     }
 
     loadQuickControlBtns() {
@@ -181,44 +100,20 @@ class Renderer {
 
     start(id) {
         this.loadQuickControlBtns();
-
-        //Send Start Request
-        fetch(`../tetris/start`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                id: id
-            })
-        })
-        .then((response) => { //ensure the response
-            if (!response.ok) {
-                throw new Error('Failed to fetch data');
-            }
-            return response.json();
-        })
-        .then((data) => { //handle the response
-            console.log(data.message);
-            this.id = data.id;
-            this.status = data.status;
-            this.gameLoop();
-        })
-        .catch((error) => {
-            console.error(`${error}`);
-        });
     }
 
     openGameControlMenu() {
         this.unloadQuickControlBtns();
         this.gameControlMenu.open();
+        
+        this.clearBoard();
     }
 
     closeGameControlMenu() {
         this.gameControlMenu.close();
         
         this.loadQuickControlBtns();
-        this.resume();
+        //this.resume();
     }
 
     sendReq(url, method, body, callback) {
@@ -243,60 +138,20 @@ class Renderer {
         });
     }
 
-    pause() {
-        this.sendReq(
-            '../tetris/setStatus',
-            'POST',
-            JSON.stringify({ id: this.id, status: 'pause' }),
-            (data) => {
-                console.log(data.message);
-
-                this.status = data.status;
-            }
-        );
-    }
-
-    resume() {
-        this.sendReq(
-            '../tetris/setStatus',
-            'POST',
-            JSON.stringify({ id: this.id, status: 'resume' }),
-            (data) => {
-                console.log(data.message);
-
-                this.status = data.status;
-            }
-        );
+    clearBoard() { //Only clears visually
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx_hud.clearRect(0, 0, canvas_hud.width, canvas_hud.height);
     }
 
     endSequence() {
+        this.unloadQuickControlBtns();
+        this.clearBoard();
+
         this.endMenu.open();
     }
 
     closeEndMenu() {
         this.endMenu.close();
-    }
-
-    gameLoop() {
-        if (this.status === "end") {
-            this.endSequence();
-            return;
-        }
-    
-        this.requestNewFrame();
-        
-        setTimeout(this.gameLoop.bind(this), this.frameFreq);
-    }
-
-    requestNewFrame() {
-        this.sendReq(
-            '../tetris/reqFrame',
-            'POST',
-            JSON.stringify({ id: this.id }),
-            (data) => {
-                this.displayFrame(data.frame, data.status, data.stats, data.eventLog, data.debug);
-            }
-        );
     }
 
     drawTile(row, col) {
@@ -327,18 +182,14 @@ class Renderer {
         
         this.overlay.open = true;
 
-        ctx_overlay.font = '16px Arial';
-        ctx_overlay.fillStyle = `rgba(0, 0, 0, 1)`;
-
-        const textWidth = ctx_overlay.measureText(this.overlay.text).width;
-        const centerX = (this.r_dimensions.width - textWidth) / 2;
-        ctx_overlay.fillText(`${this.overlay.text}`, centerX, 20);
+        this.displayOverlayText();
 
         const fadeText = (opacityReduction) => {
-            ctx_overlay.clearRect(0, 0, canvas_overlay.width, canvas_overlay.height);
             this.overlay.opacity -= opacityReduction;
+            ctx_overlay.clearRect(0, 0, canvas_overlay.width, canvas_overlay.height);
+
             ctx_overlay.fillStyle = `rgba(0, 0, 0, ${this.overlay.opacity})`;
-            ctx_overlay.fillText(`${this.overlay.text}`, centerX, 20);
+            this.displayOverlayText();
         }
 
         let fadeCaller;
@@ -366,6 +217,33 @@ class Renderer {
         }, this.overlay.properties.opaquePeriod);
 
         this.overlay.timers.push({type: 'interval', timer: fadeCaller}, {type: 'timeout', timer: opaqueTimeout}, {type: 'timeout', timer: fadeTimeout});
+    }
+
+    longOverlay(text) {
+        ctx_overlay.clearRect(0, 0, canvas_overlay.width, canvas_overlay.height);
+
+        this.overlay.text = text;
+        this.overlay.opacity = 1;
+        
+        this.overlay.open = true;
+
+        ctx_overlay.fillStyle = `rgba(0, 0, 0, 1)`;
+        this.displayOverlayText();
+    }
+
+    closeOverlay() {
+        ctx_overlay.clearRect(0, 0, canvas_overlay.width, canvas_overlay.height);
+
+        this.overlay.text = '';
+        this.overlay.open = false;
+    }
+
+    displayOverlayText() { //Does not clear canvas
+        ctx_overlay.font = '16px Arial';
+
+        const textWidth = ctx_overlay.measureText(this.overlay.text).width;
+        const centerX = (this.r_dimensions.width - textWidth) / 2;
+        ctx_overlay.fillText(`${this.overlay.text}`, centerX, 20);
     }
 
     default_callback() {
@@ -400,7 +278,7 @@ class Renderer {
 
         //Game messages
         if (this.status === "end") {
-            this.drawOverlay("Game Over!")
+            //this.drawOverlay("Game Over!")
         }
 
         if (eventLog) {
