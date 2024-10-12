@@ -47,6 +47,11 @@ class Game {
                 }
             ],
             gameControlBtns: [ //in-game menu page
+                {txt: ['Reset'], callback: () => {
+                    this.renderer.closeGameControlMenu();
+                    this.reset();
+                    this.renderer.endSequence();
+                }},
                 {txt: ['Return'], callback: () => {
                     this.renderer.closeGameControlMenu();
                     this.resume();
@@ -62,6 +67,7 @@ class Game {
         this.renderer = new Renderer(width, height, this.renderer_btns);
 
     }
+
     init() {
         this.openMenu();
 
@@ -169,6 +175,19 @@ class Game {
                 console.log(data.message);
                 
                 this.status = data.status;
+            }
+        );
+    }
+
+    reset() {
+        this.sendReq(
+            '../tetris/reset',
+            'POST',
+            JSON.stringify({ id: this.id }),
+            (data) => {
+                console.log(data.message);
+                //this.status = data.status;
+                this.stats = data.stats;
             }
         );
     }
