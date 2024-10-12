@@ -14,6 +14,7 @@ const ctx_overlay = canvas_overlay.getContext("2d");
 
 import {Btn_Menu} from 'https://sudo75.github.io/canvas-functions/btn_menu.js';
 import {Game_Option_Menu} from './game_option_menu.js';
+import {Board_Renderer} from './board_renderer.js';
 
 class Renderer {
     constructor(rd_width, rd_height, btns) {
@@ -64,6 +65,9 @@ class Renderer {
         //Death screen menu
         this.endMenuBtns = btns.endMenuBtns;
         this.endMenu = new Game_Option_Menu(canvas_controls, ctx_controls, 'Game Over', this.endMenuBtns, this.r_dimensions.width, this.r_dimensions.height);
+
+        //Board renderer
+        this.boardRenderer = new Board_Renderer(canvas, ctx, this.b_dimensions.width, this.b_dimensions.height, this.r_dimensions.width, this.r_dimensions.height);
     }
 
     init() {
@@ -154,15 +158,6 @@ class Renderer {
         this.endMenu.close();
     }
 
-    drawTile(row, col) {
-        const width = this.r_dimensions.width / this.b_dimensions.width;
-        const height = this.r_dimensions.height / this.b_dimensions.height;
-        const offsetWidth = col * width;
-        const offsetHeight = row * height;
-
-        ctx.fillRect(offsetWidth, offsetHeight, width, height);
-    }
-
     drawOverlay(text) { //DOES NOT CLEAR REGION
         ctx_overlay.clearRect(0, 0, canvas_overlay.width, canvas_overlay.height);
         this.overlay.timers.forEach(({type, timer}) => {
@@ -250,9 +245,19 @@ class Renderer {
         console.log('callback: defaulted');
     }
 
+    drawTile(row, col) {
+        const width = this.r_dimensions.width / this.b_dimensions.width;
+        const height = this.r_dimensions.height / this.b_dimensions.height;
+        const offsetWidth = col * width;
+        const offsetHeight = row * height;
+
+        ctx.fillRect(offsetWidth, offsetHeight, width, height);
+    }
+
     displayFrame(frame, status, stats, eventLog, debug) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        /*
         //Update board
         for (let i = 0; i < this.b_dimensions.height; i++) {
             for (let j = 0; j < this.b_dimensions.width; j++) {
@@ -261,6 +266,9 @@ class Renderer {
                 }
             }
         }
+        */
+
+        this.boardRenderer.render(frame);
 
         //Update status
         this.status = status;
