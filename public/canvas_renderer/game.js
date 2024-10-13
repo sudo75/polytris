@@ -206,6 +206,7 @@ class Game {
         canvas_container.style.width = '300px';
         canvas_container.style.height = '600px';
 
+        this.menu.font.title.size = 40;
         this.menu.init();
     }
 
