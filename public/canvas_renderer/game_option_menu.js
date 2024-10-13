@@ -10,7 +10,7 @@ class Game_Option_Menu {
         this.height = height;
         this.btns = btns;
         this.title = title;
-        this.Menu_Renderer = new Menu_Renderer(this.title, null, 'version xyz', this.btns, 300, 600, this.canvas);
+        this.Menu_Renderer = new Menu_Renderer(this.title, null, null, this.btns, 300, 600, this.canvas);
     }
 
     open() {
@@ -18,6 +18,7 @@ class Game_Option_Menu {
             return;
         }
 
+        this.Menu_Renderer.font.title.size = 24;
         this.isOpen = true;
         this.Menu_Renderer.init();
     }
