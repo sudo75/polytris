@@ -198,7 +198,6 @@ class Renderer {
                     txt: stats[key]
                 }
             ));
-            console.log(info)
 
             const infoScreenY = 30 + this.endMenuBtns.length * (this.endMenu.Menu_Renderer.btn_menu.btn_dimensions.height + this.endMenu.Menu_Renderer.btn_menu.btn_margin) + this.endMenu.Menu_Renderer.btn_menu.menuY;
 
