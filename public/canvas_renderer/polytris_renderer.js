@@ -151,23 +151,60 @@ class Renderer {
     }
 
     endSequence(stats) {
-        this.unloadQuickControlBtns();
-        this.clearBoard();
-
-        this.endMenu.open();
-        
-        const info = Object.keys(stats).map(key => (
-            {
-                head: `${key}:  `,
-                txt: stats[key]
+        //Death animation
+        let animationFrame = [];
+        for (let i = 0; i < this.b_dimensions.height; i++) {
+            let row = [];
+            for (let j = 0; j < this.b_dimensions.width; j++) {
+                row.push(0);
             }
-        ));
-        console.log(info)
+            animationFrame.push(row);
+        }
 
-        const infoScreenY = 30 + this.endMenuBtns.length * (this.endMenu.Menu_Renderer.btn_menu.btn_dimensions.height + this.endMenu.Menu_Renderer.btn_menu.btn_margin) + this.endMenu.Menu_Renderer.btn_menu.menuY;
+        let animationFrameIndex = this.b_dimensions.height - 1;
+        const pushAnimationFrame = () => {
+            for (let i = 0; i < this.b_dimensions.width; i++) {
+                animationFrame[animationFrameIndex][i] = 63;
+            }
 
-        this.info_screen = new Info_Screen(canvas_controls, ctx_controls, 'Statistics:', info, infoScreenY);
-        this.info_screen.open();
+            this.boardRenderer.render(animationFrame);
+            
+            animationFrameIndex--;
+            if (animationFrameIndex >= 0) {
+                setTimeout(pushAnimationFrame, 50);
+            } else {
+                setTimeout(triggerDeathScreen, 200);
+            }
+        };
+
+        this.unloadQuickControlBtns();
+        setTimeout(() => {
+            //Clear Board
+            this.clearBoard();
+
+            //Animation
+            pushAnimationFrame();
+        }, 200);
+
+        const triggerDeathScreen = () => {
+            //Death screen
+            this.clearBoard();
+
+            this.endMenu.open();
+
+            const info = Object.keys(stats).map(key => (
+                {
+                    head: `${key}:  `,
+                    txt: stats[key]
+                }
+            ));
+            console.log(info)
+
+            const infoScreenY = 30 + this.endMenuBtns.length * (this.endMenu.Menu_Renderer.btn_menu.btn_dimensions.height + this.endMenu.Menu_Renderer.btn_menu.btn_margin) + this.endMenu.Menu_Renderer.btn_menu.menuY;
+
+            this.info_screen = new Info_Screen(canvas_controls, ctx_controls, 'Statistics:', info, infoScreenY);
+            this.info_screen.open();
+        }
     }
 
     closeEndMenu() {
@@ -261,28 +298,8 @@ class Renderer {
         console.log('callback: defaulted');
     }
 
-    drawTile(row, col) {
-        const width = this.r_dimensions.width / this.b_dimensions.width;
-        const height = this.r_dimensions.height / this.b_dimensions.height;
-        const offsetWidth = col * width;
-        const offsetHeight = row * height;
-
-        ctx.fillRect(offsetWidth, offsetHeight, width, height);
-    }
-
     displayFrame(frame, status, stats, eventLog, debug) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        /*
-        //Update board
-        for (let i = 0; i < this.b_dimensions.height; i++) {
-            for (let j = 0; j < this.b_dimensions.width; j++) {
-                if (frame[i][j] !== 0) {
-                    this.drawTile(i, j);
-                }
-            }
-        }
-        */
 
         this.boardRenderer.render(frame);
 
@@ -300,14 +317,8 @@ class Renderer {
             ctx_hud.fillText(`${key}: ${stats[key]}`, 10, 50 + i * 30);
         });
 
-        //Game messages
-        if (this.status === "end") {
-            //this.drawOverlay("Game Over!")
-        }
-
         if (eventLog) {
             //Event log
-
             let logsToKeep = [];
             const currentTime = Date.now();
             for (let i = 0; i < eventLog.length; i++) {
