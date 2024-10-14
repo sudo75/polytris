@@ -1,5 +1,7 @@
 import {Menu_Renderer} from 'https://sudo75.github.io/canvas-functions/menu_renderer.js';
+import {Btn} from 'https://sudo75.github.io/canvas-functions/button.js';
 import {Renderer} from './polytris_renderer.js';
+import {Info_Screen} from './info_screen.js';
 
 class Game {
     constructor(width, height) {
@@ -8,17 +10,21 @@ class Game {
         this.canvas_menu = document.querySelector('.menu');
         this.ctx_menu = this.canvas_menu.getContext('2d');
         this.btns = [
-            {txt: ['Start'], callback: this.start.bind(this)},
-            {txt: ['Standard Rendering'], callback: this.useStandardRenderer.bind(this)},
-            //{txt: ['Settings'], callback: this.openSettings.bind(this)}
+            {txt: ['Play'], callback: this.start.bind(this)},
+            {txt: ['Settings'], callback: this.openSettings.bind(this)},
+            {txt: ['Statistics'], callback: this.openStats.bind(this)}
         ];
-        this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering (alpha)', 'v.0.4.0-dev', this.btns, width, height, this.canvas_menu);
+        this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering (alpha)', 'v.0.4.0', this.btns, width, height, this.canvas_menu);
 
         this.maxFPS = 20;
         this.frameFreq = 1000 / this.maxFPS; //ms
         this.id = null;
         this.status = null;
         this.stats = null;
+        this.saved_stats = {
+            debug: 6,
+            debug2: 91
+        }
 
         this.renderer_btns = {
             quickControlBtns: [
@@ -67,12 +73,14 @@ class Game {
         this.renderer = new Renderer(width, height, this.renderer_btns);
 
         this.settings_btns = [
-            {txt: ['Main Menu'], callback: this.closeSettings.bind(this)},
-            {txt: ['Setting 2'], callback: this.default_callback.bind(this)},
-            {txt: ['Setting 3'], callback: this.default_callback.bind(this)}
+            {txt: ['Setting 1'], callback: this.default_callback.bind(this)},
+            {txt: ['Standard Rendering'], callback: this.useStandardRenderer.bind(this)},
+            {txt: ['Main Menu'], callback: this.closeSettings.bind(this)}
         ]
 
         this.settings = new Menu_Renderer('Settings', null, null, this.settings_btns, width, height, this.canvas_menu);
+
+        this.stats_screen = null;
     }
 
     init() {
@@ -196,6 +204,59 @@ class Game {
 
     default_callback() {
         console.log('Default callback: not assigned');
+    }
+
+    openStats() {
+        this.closeMenu();
+        
+        const info = Object.keys(this.saved_stats).map(key => (
+            {
+                head: `${key}:  `,
+                txt: this.saved_stats[key]
+            }
+        ));
+        this.stats_screen = {
+            info: new Info_Screen(this.canvas_menu, this.ctx_menu, "Statistics", info, 5), 
+            menuLink: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 60, this.canvas_menu.width - 20, 50, ['Return'], this.closeStats.bind(this)),
+            listener: null,
+            mouseListener: (event) => {
+                this.canvas_menu.style.cursor = 'default';
+                const rect = this.canvas_menu.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left;
+                const mouseY = event.clientY - rect.top;
+
+                if (
+                    (mouseX >= this.stats_screen.menuLink.bounds.x && mouseX <= this.stats_screen.menuLink.bounds.x + this.stats_screen.menuLink.bounds.width) &&
+                    (mouseY >= this.stats_screen.menuLink.bounds.y && mouseY <= this.stats_screen.menuLink.bounds.y + this.stats_screen.menuLink.bounds.height)
+                ) {
+                    this.canvas_menu.style.cursor = 'pointer';
+                }
+            },
+
+            open: () => {
+                this.canvas_menu.style.pointerEvents = 'auto';
+                this.stats_screen.info.open();
+                this.stats_screen.menuLink.init();
+
+                this.stats_screen.listener = this.stats_screen.mouseListener.bind(this);
+                this.canvas_menu.addEventListener('mousemove', this.stats_screen.mouseListener);
+            },
+
+            close: () => {
+                this.canvas_menu.style.pointerEvents = 'none';
+                this.stats_screen.info.close();
+                this.stats_screen.menuLink.removeListeners();
+
+                this.canvas_menu.removeEventListener('mousemove', this.stats_screen.listener);
+            }
+        };
+
+        this.stats_screen.open();
+    }
+
+    closeStats() {
+        this.stats_screen.close();
+        this.openMenu();
     }
 
     openMenu() {
