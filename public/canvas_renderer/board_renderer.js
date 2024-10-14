@@ -33,7 +33,8 @@ class Board_Renderer {
             15: {colour: 'lightpink'},
             16: {colour: 'lightgreen'},
             17: {colour: 'lightseagreen'},
-            18: {colour: 'lightcyan'}
+            18: {colour: 'lightcyan'},
+            63: {colour: 'grey'}
         }
     }
 
@@ -42,7 +43,6 @@ class Board_Renderer {
             for (let j = 0; j < this.b_width; j++) {
                 if (frame[i][j] !== 0) {
                     this.ctx.fillStyle = this.styleMap[frame[i][j]].colour;
-
                     this.drawTile(i, j);
                 }
             }
