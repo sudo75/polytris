@@ -162,6 +162,7 @@ class Game {
     }
 
     pause() {
+        this.status = 'pause';
         this.sendReq(
             '../tetris/setStatus',
             'POST',
@@ -283,6 +284,12 @@ class Game {
     }
 
     displayFrame(frame, status, stats, eventLog, debug) {
+        if (this.status === "end") {
+            this.renderer.endSequence(this.stats);
+            return;
+        } else if (this.status === "pause") {
+            return;
+        }
         this.renderer.displayFrame(frame, status, stats, eventLog, debug);
     }
 }
