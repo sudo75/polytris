@@ -71,7 +71,7 @@ class Info_Screen {
         }
 
         this.isOpen = false;
-        this.ctx.clearRect(0, y, this.width, this.height - y);
+        this.ctx.clearRect(0, this.y, this.width, this.height - this.y);
     }
 }
 
