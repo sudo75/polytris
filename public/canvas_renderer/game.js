@@ -73,14 +73,12 @@ class Game {
         ]
 
         this.settings = new Menu_Renderer('Settings', null, null, this.settings_btns, width, height, this.canvas_menu);
-
     }
 
     init() {
         this.openMenu();
 
         //Event listeners
-
         document.addEventListener("keydown", (event) => {
             if (this.status !== "play") {
                 return;
@@ -105,13 +103,6 @@ class Game {
             sendInput(key);
         });
         
-        document.addEventListener("keyup", (event) => {
-            //clear key press btn indication
-        
-            //list of ids to clear
-        
-        });
-        
         const sendInput = (key) => {
             this.sendReq(
                 `/tetris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
@@ -125,8 +116,6 @@ class Game {
     }
 
     start(id) {
-        console.log(this.renderer)
-        
         this.closeMenu();
 
         this.renderer.init();
@@ -263,8 +252,6 @@ class Game {
     
         if (this.status === 'play') {
             this.requestNewFrame();
-        } else {
-            //this.renderer.clearBoard(); //sometimes a frame is requested when a menu is being shown
         }
         
         setTimeout(this.gameLoop.bind(this), this.frameFreq);
@@ -284,10 +271,7 @@ class Game {
     }
 
     displayFrame(frame, status, stats, eventLog, debug) {
-        if (this.status === "end") {
-            this.renderer.endSequence(this.stats);
-            return;
-        } else if (this.status === "pause") {
+        if (this.status === "pause") {
             return;
         }
         this.renderer.displayFrame(frame, status, stats, eventLog, debug);
