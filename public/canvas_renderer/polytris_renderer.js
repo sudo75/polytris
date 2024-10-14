@@ -71,8 +71,6 @@ class Renderer {
 
         //Board renderer
         this.boardRenderer = new Board_Renderer(canvas, ctx, this.b_dimensions.width, this.b_dimensions.height, this.r_dimensions.width, this.r_dimensions.height);
-
-        
     }
 
     init() {

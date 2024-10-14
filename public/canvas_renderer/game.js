@@ -10,7 +10,7 @@ class Game {
         this.btns = [
             {txt: ['Start'], callback: this.start.bind(this)},
             {txt: ['Standard Rendering'], callback: this.useStandardRenderer.bind(this)},
-            {txt: ['CC1', 'CC2', 'CC3'], callback: this.default_callback.bind(this)}
+            {txt: ['Settings'], callback: this.openSettings.bind(this)}
         ];
         this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering (alpha)', 'v.0.4.0-dev', this.btns, width, height, this.canvas_menu);
 
@@ -50,7 +50,7 @@ class Game {
                 {txt: ['Reset'], callback: () => {
                     this.renderer.closeGameControlMenu();
                     this.reset();
-                    this.renderer.endSequence();
+                    this.renderer.endSequence(this.stats);
                 }},
                 {txt: ['Return'], callback: () => {
                     this.renderer.closeGameControlMenu();
@@ -65,6 +65,14 @@ class Game {
             ]
         }
         this.renderer = new Renderer(width, height, this.renderer_btns);
+
+        this.settings_btns = [
+            {txt: ['Main Menu'], callback: this.closeSettings.bind(this)},
+            {txt: ['Setting 2'], callback: this.default_callback.bind(this)},
+            {txt: ['Setting 3'], callback: this.default_callback.bind(this)}
+        ]
+
+        this.settings = new Menu_Renderer('Settings', null, null, this.settings_btns, width, height, this.canvas_menu);
 
     }
 
@@ -214,6 +222,16 @@ class Game {
         this.menu.close();
     }
 
+    openSettings() {
+        this.closeMenu();
+        this.settings.init();
+    }
+
+    closeSettings() {
+        this.settings.close();
+        this.openMenu();
+    }
+
     sendReq(url, method, body, callback) {
         fetch(`${url}`, { //use /tetris/xyz format
             method: `${method}`,
@@ -238,14 +256,14 @@ class Game {
 
     gameLoop() {
         if (this.status === "end") {
-            this.renderer.endSequence();
+            this.renderer.endSequence(this.stats);
             return;
         }
     
         if (this.status === 'play') {
             this.requestNewFrame();
         } else {
-            this.renderer.clearBoard(); //sometimes a frame is requested when a menu is being shown
+            //this.renderer.clearBoard(); //sometimes a frame is requested when a menu is being shown
         }
         
         setTimeout(this.gameLoop.bind(this), this.frameFreq);
