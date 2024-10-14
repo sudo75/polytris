@@ -15,6 +15,7 @@ const ctx_overlay = canvas_overlay.getContext("2d");
 import {Btn_Menu} from 'https://sudo75.github.io/canvas-functions/btn_menu.js';
 import {Game_Option_Menu} from './game_option_menu.js';
 import {Board_Renderer} from './board_renderer.js';
+import {Info_Screen} from './info_screen.js';
 
 class Renderer {
     constructor(rd_width, rd_height, btns) {
@@ -66,8 +67,12 @@ class Renderer {
         this.endMenuBtns = btns.endMenuBtns;
         this.endMenu = new Game_Option_Menu(canvas_controls, ctx_controls, 'Game Over', this.endMenuBtns, this.r_dimensions.width, this.r_dimensions.height);
 
+        this.info_screen = null;
+
         //Board renderer
         this.boardRenderer = new Board_Renderer(canvas, ctx, this.b_dimensions.width, this.b_dimensions.height, this.r_dimensions.width, this.r_dimensions.height);
+
+        
     }
 
     init() {
@@ -147,11 +152,24 @@ class Renderer {
         ctx_hud.clearRect(0, 0, canvas_hud.width, canvas_hud.height);
     }
 
-    endSequence() {
+    endSequence(stats) {
         this.unloadQuickControlBtns();
         this.clearBoard();
 
         this.endMenu.open();
+        
+        const info = Object.keys(stats).map(key => (
+            {
+                head: `${key}:  `,
+                txt: stats[key]
+            }
+        ));
+        console.log(info)
+
+        const infoScreenY = 30 + this.endMenuBtns.length * (this.endMenu.Menu_Renderer.btn_menu.btn_dimensions.height + this.endMenu.Menu_Renderer.btn_menu.btn_margin) + this.endMenu.Menu_Renderer.btn_menu.menuY;
+
+        this.info_screen = new Info_Screen(canvas_controls, ctx_controls, 'Statistics:', info, infoScreenY);
+        this.info_screen.open();
     }
 
     closeEndMenu() {
