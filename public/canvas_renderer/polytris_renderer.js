@@ -150,7 +150,7 @@ class Renderer {
         ctx_hud.clearRect(0, 0, canvas_hud.width, canvas_hud.height);
     }
 
-    endSequence(stats) {
+    endSequence(stats, savedStats) {
         //Death animation
         let animationFrame = [];
         for (let i = 0; i < this.b_dimensions.height; i++) {
@@ -192,16 +192,61 @@ class Renderer {
 
             this.endMenu.open();
 
-            const info = Object.keys(stats).map(key => (
+            const stats_formatted = Object.keys(stats).map(key => (
                 {
-                    head: `${key}:  `,
+                    head: `${key}`,
                     txt: stats[key]
                 }
             ));
+            const savedStats_formatted = Object.keys(savedStats).map(key => (
+                {
+                    head: `${key}`,
+                    txt: savedStats[key]
+                }
+            ));
+            
+            for (let i = 0; i < stats_formatted.length; i++) {
+                switch (stats_formatted[i].head) {
+                    case 'level':
+                        stats_formatted[i].head = 'Level:  ';
+                        break;
+                    case 'score':
+                        stats_formatted[i].head = 'Score:  ';
+                        break;
+                    case 'linesCleared':
+                        stats_formatted[i].head = 'Lines Cleared:  ';
+                        break;
+                }
+            }
+            for (let i = 0; i < savedStats_formatted.length; i++) {
+                switch (savedStats_formatted[i].head) {
+                    case 'hiLevel':
+                        savedStats_formatted[i].head = 'High Level:  ';
+                        break;
+                    case 'hiScore':
+                        savedStats_formatted[i].head = 'High Score:  ';
+                        break;
+                    case 'hiLinesCleared':
+                        savedStats_formatted[i].head = 'High Lines Cleared:  ';
+                        break;
+                }
+            }
 
-            const infoScreenY = 30 + this.endMenuBtns.length * (this.endMenu.Menu_Renderer.btn_menu.btn_dimensions.height + this.endMenu.Menu_Renderer.btn_menu.btn_margin) + this.endMenu.Menu_Renderer.btn_menu.menuY;
+            const infoScreenY_stats = 30 + this.endMenuBtns.length * (this.endMenu.Menu_Renderer.btn_menu.btn_dimensions.height + this.endMenu.Menu_Renderer.btn_menu.btn_margin) + this.endMenu.Menu_Renderer.btn_menu.menuY;
+            const infoScreenY_savedStats = 60 + infoScreenY_stats + stats_formatted.length * 36;
 
-            this.info_screen = new Info_Screen(canvas_controls, ctx_controls, 'Statistics:', info, infoScreenY);
+            this.info_screen = {
+                stats: new Info_Screen(canvas_controls, ctx_controls, 'Statistics:', stats_formatted, infoScreenY_stats),
+                savedStats: new Info_Screen(canvas_controls, ctx_controls, 'Records:', savedStats_formatted, infoScreenY_savedStats),
+                open: () => {
+                    this.info_screen.stats.open();
+                    this.info_screen.savedStats.open();
+                },
+                close: () => {
+                    this.info_screen.stats.close();
+                    this.info_screen.savedStats.close();
+                }
+            }
             this.info_screen.open();
         }
     }
