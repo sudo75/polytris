@@ -3,21 +3,32 @@ const Game = require('../models/tetris_model.js');
 let games = [];
 
 exports.start = (req, res) => {
-    const { id } = req.body;
+    const { id, key, useKey } = req.body;
+
+    if (id && key) {
+        if (!isValidKey(id, key)) {
+            return;
+        }
+    }
 
     if (!id) {
         const newGame = new Game(games.length);
         newGame.start();
+        newGame.useKey = useKey;
         games.push(newGame);
         //const frame = newGame.pushFrame();
-        return res.status(200).json({ message: `Game started successfully with id ${newGame.id}; status ${newGame.status}`, id: newGame.id, status: newGame.status });
+        return res.status(200).json({ message: `Game started successfully with id ${newGame.id}; status ${newGame.status}`, id: newGame.id, key: newGame.key, status: newGame.status });
     } else {
         return res.status(200).json({ message: 'Loading game' });
     }
 };
 
 exports.reset = (req, res) => {
-    const { id } = req.body;
+    const { id, key } = req.body;
+
+    if (!isValidKey(id, key)) {
+        return;
+    }
 
     if (id !== 0 || id != null) {
         games[id].reset();
@@ -30,7 +41,12 @@ exports.reset = (req, res) => {
 };
 
 exports.setStatus = (req, res) => {
-    const { id, status } = req.body;
+    const { id, key, status } = req.body;
+
+    if (!isValidKey(id, key)) {
+        return;
+    }
+
     if (id !== 0 || id != null) {
         if (typeof games[id][status] === 'function') {
             games[id][status]();
@@ -42,7 +58,11 @@ exports.setStatus = (req, res) => {
 }
 
 exports.reqFrame = (req, res) => {
-    const { id } = req.body;
+    const { id, key } = req.body;
+
+    if (!isValidKey(id, key)) {
+        return;
+    }
 
     if (games[id]) {
         //games[id].pushFrame();
@@ -54,7 +74,11 @@ exports.reqFrame = (req, res) => {
 }
 
 exports.input_up = (req, res) => {
-    const { id } = req.body;
+    const { id, key } = req.body;
+
+    if (!isValidKey(id, key)) {
+        return;
+    }
 
     games[id].input_up();
     const data = games[id].getFrame();
@@ -63,7 +87,11 @@ exports.input_up = (req, res) => {
 
 }
 exports.input_down = (req, res) => {
-    const { id } = req.body;
+    const { id, key } = req.body;
+
+    if (!isValidKey(id, key)) {
+        return;
+    }
 
     games[id].input_down();
     const data = games[id].getFrame();
@@ -72,8 +100,11 @@ exports.input_down = (req, res) => {
 
 }
 exports.input_left = (req, res) => {
-    const { id } = req.body;
+    const { id, key } = req.body;
 
+    if (!isValidKey(id, key)) {
+        return;
+    }
 
     games[id].input_left();
     const data = games[id].getFrame();
@@ -82,7 +113,11 @@ exports.input_left = (req, res) => {
 
 }
 exports.input_right = (req, res) => {
-    const { id } = req.body;
+    const { id, key } = req.body;
+
+    if (!isValidKey(id, key)) {
+        return;
+    }
 
     games[id].input_right();
     const data = games[id].getFrame();
@@ -91,7 +126,11 @@ exports.input_right = (req, res) => {
 
 }
 exports.input_space = (req, res) => {
-    const { id } = req.body;
+    const { id, key } = req.body;
+
+    if (!isValidKey(id, key)) {
+        return;
+    }
 
     games[id].input_space();
     const data = games[id].getFrame();
@@ -99,3 +138,12 @@ exports.input_space = (req, res) => {
     return res.status(200).json({ message: 'Frame pushed - input right', frame: data.frame, status: data.status, stats: data.stats, debug: data.debug});
 
 }
+
+
+const isValidKey = (id, key) => {
+    if (!games[id].useKey) {
+        return true;
+    } else {
+        return games[id].key === key;
+    }
+};

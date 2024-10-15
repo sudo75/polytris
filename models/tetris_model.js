@@ -15,6 +15,7 @@ class Game {
             score: 0,
             linesCleared: 0
         }
+        this.useKey = true;
         this.speed = [400, 370, 340, 310, 280, 250, 220, 190, 160, 130, 100]; //ms per frame update - 11 levels
         this.currentSpeed = 400;
         this.eventLog = [];
@@ -32,7 +33,7 @@ class Game {
             key += validChars[charIndex];
         }
 
-        return key;        
+        return key;
     }
 
     getTime() {
