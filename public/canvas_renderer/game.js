@@ -19,6 +19,7 @@ class Game {
         this.maxFPS = 20;
         this.frameFreq = 1000 / this.maxFPS; //ms
         this.id = null;
+        this.key = null;
         this.status = null;
         this.stats = null;
         this.saved_stats = {
@@ -115,7 +116,7 @@ class Game {
             this.sendReq(
                 `/tetris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
                 'POST',
-                JSON.stringify({ id: this.id }),
+                JSON.stringify({ id: this.id, key: this.key }),
                 (data) => {
                     this.displayFrame(data.frame, data.status, data.stats, null, data.debug);
                 }
@@ -123,7 +124,7 @@ class Game {
         }
     }
 
-    start(id) {
+    start(id, key) {
         this.closeMenu();
 
         this.renderer.init();
@@ -136,7 +137,9 @@ class Game {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                id: id
+                id: id,
+                key: key,
+                useKey: true
             })
         })
         .then((response) => { //ensure the response
@@ -148,6 +151,7 @@ class Game {
         .then((data) => { //handle the response
             console.log(data.message);
             this.id = data.id;
+            this.key = data.key;
             this.status = data.status;
 
             this.renderer.status = data.status;
@@ -163,7 +167,7 @@ class Game {
         this.sendReq(
             '../tetris/setStatus',
             'POST',
-            JSON.stringify({ id: this.id, status: 'pause' }),
+            JSON.stringify({ id: this.id, key: this.key, status: 'pause' }),
             (data) => {
                 console.log(data.message);
 
@@ -176,7 +180,7 @@ class Game {
         this.sendReq(
             '../tetris/setStatus',
             'POST',
-            JSON.stringify({ id: this.id, status: 'resume' }),
+            JSON.stringify({ id: this.id, key: this.key, status: 'resume' }),
             (data) => {
                 console.log(data.message);
                 
@@ -189,7 +193,7 @@ class Game {
         this.sendReq(
             '../tetris/reset',
             'POST',
-            JSON.stringify({ id: this.id }),
+            JSON.stringify({ id: this.id, key: this.key }),
             (data) => {
                 console.log(data.message);
                 //this.status = data.status;
@@ -322,7 +326,7 @@ class Game {
         this.sendReq(
             '../tetris/reqFrame',
             'POST',
-            JSON.stringify({ id: this.id }),
+            JSON.stringify({ id: this.id, key: this.key }),
             (data) => {
                 this.displayFrame(data.frame, data.status, data.stats, data.eventLog, data.debug);
                 this.status = data.status;
