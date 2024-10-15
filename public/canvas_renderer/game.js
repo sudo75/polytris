@@ -23,8 +23,9 @@ class Game {
         this.status = null;
         this.stats = null;
         this.saved_stats = {
-            debug: 6,
-            debug2: 91
+            hiLevel: 0,
+            hiScore: 0,
+            hiLinesCleared: 0
         }
 
         this.renderer_btns = {
@@ -57,7 +58,7 @@ class Game {
                 {txt: ['Reset'], callback: () => {
                     this.renderer.closeGameControlMenu();
                     this.reset();
-                    this.renderer.endSequence(this.stats);
+                    this.renderer.endSequence(this.stats, this.saved_stats);
                 }},
                 {txt: ['Return'], callback: () => {
                     this.renderer.closeGameControlMenu();
@@ -211,16 +212,32 @@ class Game {
     }
 
     openStats() {
+        const saved_stats = structuredClone(this.saved_stats);
+        
         this.closeMenu();
         
-        const info = Object.keys(this.saved_stats).map(key => (
+        const info = Object.keys(saved_stats).map(key => (
             {
-                head: `${key}:  `,
-                txt: this.saved_stats[key]
+                head: `${key}`,
+                txt: saved_stats[key]
             }
         ));
+        for (let i = 0; i < info.length; i++) {
+            switch (info[i].head) {
+                case 'hiLevel':
+                    info[i].head = 'High Level:  ';
+                    break;
+                case 'hiScore':
+                    info[i].head = 'High Score:  ';
+                    break;
+                case 'hiLinesCleared':
+                    info[i].head = 'High Lines Cleared:  ';
+                    break;
+            }
+        }
+
         this.stats_screen = {
-            info: new Info_Screen(this.canvas_menu, this.ctx_menu, "Statistics", info, 5), 
+            info: new Info_Screen(this.canvas_menu, this.ctx_menu, "Statistics:", info, 5), 
             menuLink: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 60, this.canvas_menu.width - 20, 50, ['Return'], this.closeStats.bind(this)),
             listener: null,
             mouseListener: (event) => {
@@ -311,7 +328,7 @@ class Game {
 
     gameLoop() {
         if (this.status === "end") {
-            this.renderer.endSequence(this.stats);
+            this.renderer.endSequence(this.stats, this.saved_stats);
             return;
         }
     
@@ -331,8 +348,16 @@ class Game {
                 this.displayFrame(data.frame, data.status, data.stats, data.eventLog, data.debug);
                 this.status = data.status;
                 this.stats = data.stats;
+
+                this.updateSavedStats();
             }
         );
+    }
+
+    updateSavedStats() {
+        this.saved_stats.hiScore = this.saved_stats.hiScore < this.stats.score ? this.stats.score: this.saved_stats.hiScore;
+        this.saved_stats.hiLevel = this.saved_stats.hiLevel < this.stats.level ? this.stats.level: this.saved_stats.hiLevel;
+        this.saved_stats.hiLinesCleared = this.saved_stats.hiLinesCleared < this.stats.linesCleared ? this.stats.linesCleared: this.saved_stats.hiLinesCleared;
     }
 
     displayFrame(frame, status, stats, eventLog, debug) {
