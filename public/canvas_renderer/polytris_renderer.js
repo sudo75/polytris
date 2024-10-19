@@ -55,6 +55,10 @@ class Renderer {
             timers: []
         }
 
+        //Gamemode selection
+        this.gamemodeBtns = btns.gamemodeBtns;
+        this.gamemodeMenu = new Game_Option_Menu(canvas_controls, ctx_controls, 'New Game', this.gamemodeBtns, this.r_dimensions.width, this.r_dimensions.height);
+
         //In-game quick controls
         this.quickControlBtns = btns.quickControlBtns;
         this.quickControlMenu = null;
@@ -71,6 +75,14 @@ class Renderer {
 
         //Board renderer
         this.boardRenderer = new Board_Renderer(canvas, ctx, this.b_dimensions.width, this.b_dimensions.height, this.r_dimensions.width, this.r_dimensions.height);
+    }
+
+    openGamemodeMenu() {
+        this.gamemodeMenu.open();
+    }
+
+    closeGamemodeMenu() {
+        this.gamemodeMenu.close();
     }
 
     init() {
