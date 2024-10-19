@@ -9,12 +9,7 @@ class Game {
         this.height = height;
         this.canvas_menu = document.querySelector('.menu');
         this.ctx_menu = this.canvas_menu.getContext('2d');
-        this.btns = [
-            {txt: ['Play'], callback: this.start.bind(this)},
-            {txt: ['Settings'], callback: this.openSettings.bind(this)},
-            {txt: ['Statistics'], callback: this.openStats.bind(this)}
-        ];
-        this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering (alpha)', 'v.0.4.0', this.btns, width, height, this.canvas_menu);
+        
 
         this.maxFPS = 20;
         this.frameFreq = 1000 / this.maxFPS; //ms
@@ -26,7 +21,8 @@ class Game {
             hiLevel: 0,
             hiScore: 0,
             hiLinesCleared: 0
-        }
+        };
+        this.gamemode = 0;
 
         this.renderer_btns = {
             quickControlBtns: [
@@ -70,6 +66,23 @@ class Game {
                     this.renderer.closeEndMenu();
                     this.openMenu();
                 }}
+            ],
+            gamemodeBtns: [ //in-game menu page
+                {txt: ['Start'], callback: () => {
+                    this.gamemode = 0;
+                    this.renderer.closeGamemodeMenu();
+                    this.start(this.id);
+                }},
+                {txt: ['<= Return to Menu'], callback: () => {
+                    this.renderer.closeGamemodeMenu();
+                    this.openMenu();
+                }}
+            ],
+            endMenuBtns: [
+                {txt: ['Main Menu'], callback: () => {
+                    this.renderer.closeEndMenu();
+                    this.openMenu();
+                }}
             ]
         }
         this.renderer = new Renderer(width, height, this.renderer_btns);
@@ -83,10 +96,25 @@ class Game {
         this.settings = new Menu_Renderer('Settings', null, null, this.settings_btns, width, height, this.canvas_menu);
 
         this.stats_screen = null;
+
+        //Main Menu
+        this.btns = [
+            {txt: ['Play'], callback: () => {
+                this.closeMenu();
+                this.renderer.openGamemodeMenu();
+
+            }},
+            {txt: ['Settings'], callback: this.openSettings.bind(this)},
+            {txt: ['Statistics'], callback: this.openStats.bind(this)}
+        ];
+        this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering (alpha)', 'v.0.4.0', this.btns, width, height, this.canvas_menu);
     }
 
     init() {
         this.openMenu();
+
+        //Set saved_stats
+        this.saved_stats = JSON.parse(localStorage.getItem('saved_stats'));
 
         //Event listeners
         document.addEventListener("keydown", (event) => {
@@ -126,7 +154,7 @@ class Game {
     }
 
     start(id, key) {
-        this.closeMenu();
+        //this.closeMenu();
 
         this.renderer.init();
         this.renderer.start();
@@ -211,6 +239,20 @@ class Game {
         console.log('Default callback: not assigned');
     }
 
+    resetStats() {
+        if (confirm('Reset all saved data?')) {
+            this.saved_stats = {
+                hiLevel: 0,
+                hiScore: 0,
+                hiLinesCleared: 0
+            };
+            localStorage.setItem('saved_stats', JSON.stringify(this.saved_stats));
+
+            this.stats_screen.close();
+            this.openStats();
+        }
+    }
+
     openStats() {
         const saved_stats = structuredClone(this.saved_stats);
         
@@ -239,6 +281,7 @@ class Game {
         this.stats_screen = {
             info: new Info_Screen(this.canvas_menu, this.ctx_menu, "Statistics:", info, 5), 
             menuLink: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 60, this.canvas_menu.width - 20, 50, ['Return'], this.closeStats.bind(this)),
+            resetStats: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 120, this.canvas_menu.width - 20, 50, ['Clear Stats'], this.resetStats.bind(this)),
             listener: null,
             mouseListener: (event) => {
                 this.canvas_menu.style.cursor = 'default';
@@ -247,8 +290,13 @@ class Game {
                 const mouseY = event.clientY - rect.top;
 
                 if (
-                    (mouseX >= this.stats_screen.menuLink.bounds.x && mouseX <= this.stats_screen.menuLink.bounds.x + this.stats_screen.menuLink.bounds.width) &&
-                    (mouseY >= this.stats_screen.menuLink.bounds.y && mouseY <= this.stats_screen.menuLink.bounds.y + this.stats_screen.menuLink.bounds.height)
+                    (
+                        (mouseX >= this.stats_screen.menuLink.bounds.x && mouseX <= this.stats_screen.menuLink.bounds.x + this.stats_screen.menuLink.bounds.width) &&
+                        (mouseY >= this.stats_screen.menuLink.bounds.y && mouseY <= this.stats_screen.menuLink.bounds.y + this.stats_screen.menuLink.bounds.height)
+                    ) || (
+                        (mouseX >= this.stats_screen.resetStats.bounds.x && mouseX <= this.stats_screen.resetStats.bounds.x + this.stats_screen.resetStats.bounds.width) &&
+                        (mouseY >= this.stats_screen.resetStats.bounds.y && mouseY <= this.stats_screen.resetStats.bounds.y + this.stats_screen.resetStats.bounds.height)
+                    )
                 ) {
                     this.canvas_menu.style.cursor = 'pointer';
                 }
@@ -258,6 +306,7 @@ class Game {
                 this.canvas_menu.style.pointerEvents = 'auto';
                 this.stats_screen.info.open();
                 this.stats_screen.menuLink.init();
+                this.stats_screen.resetStats.init();
 
                 this.stats_screen.listener = this.stats_screen.mouseListener.bind(this);
                 this.canvas_menu.addEventListener('mousemove', this.stats_screen.mouseListener);
@@ -267,6 +316,7 @@ class Game {
                 this.canvas_menu.style.pointerEvents = 'none';
                 this.stats_screen.info.close();
                 this.stats_screen.menuLink.removeListeners();
+                this.stats_screen.resetStats.removeListeners();
 
                 this.canvas_menu.removeEventListener('mousemove', this.stats_screen.listener);
             }
@@ -358,6 +408,8 @@ class Game {
         this.saved_stats.hiScore = this.saved_stats.hiScore < this.stats.score ? this.stats.score: this.saved_stats.hiScore;
         this.saved_stats.hiLevel = this.saved_stats.hiLevel < this.stats.level ? this.stats.level: this.saved_stats.hiLevel;
         this.saved_stats.hiLinesCleared = this.saved_stats.hiLinesCleared < this.stats.linesCleared ? this.stats.linesCleared: this.saved_stats.hiLinesCleared;
+
+        localStorage.setItem('saved_stats', JSON.stringify(this.saved_stats));
     }
 
     displayFrame(frame, status, stats, eventLog, debug) {
