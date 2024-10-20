@@ -17,12 +17,35 @@ class Game {
         this.key = null;
         this.status = null;
         this.stats = null;
-        this.saved_stats = {
-            hiLevel: 0,
-            hiScore: 0,
-            hiLinesCleared: 0
-        };
-        this.gamemode = 0;
+        this.saved_stats = [
+            { //Polytris
+                hiLevel: 0,
+                hiScore: 0,
+                hiLinesCleared: 0
+            }, { //Monomioes
+                hiLevel: 0,
+                hiScore: 0,
+                hiLinesCleared: 0
+            }, { //Dominoes
+                hiLevel: 0,
+                hiScore: 0,
+                hiLinesCleared: 0
+            }, { //Trominoes
+                hiLevel: 0,
+                hiScore: 0,
+                hiLinesCleared: 0
+            }, { //Tetris
+                hiLevel: 0,
+                hiScore: 0,
+                hiLinesCleared: 0
+            }, { //Pentominoes
+                hiLevel: 0,
+                hiScore: 0,
+                hiLinesCleared: 0
+            }
+        ]
+        this.gamemode_arr = ['Polytris', 'Monomioes', 'Dominoes', 'Trominoes', 'Tetris', 'Pentominoes'];
+        this.gamemode = 0; //'Polytris', Dominoes, Trominoes, Tetris, Pentominoes, Monomioes
 
         this.renderer_btns = {
             quickControlBtns: [
@@ -54,7 +77,7 @@ class Game {
                 {txt: ['Reset'], callback: () => {
                     this.renderer.closeGameControlMenu();
                     this.reset();
-                    this.renderer.endSequence(this.stats, this.saved_stats);
+                    this.renderer.endSequence(this.stats, this.saved_stats[this.gamemode], this.gamemode_arr[this.gamemode]);
                 }},
                 {txt: ['Return'], callback: () => {
                     this.renderer.closeGameControlMenu();
@@ -68,10 +91,13 @@ class Game {
                 }}
             ],
             gamemodeBtns: [ //in-game menu page
+                {txt: ['...*Polytris*...', '...Monomioes...', '...Dominoes...', '...Trominoes...', '...Tetris...', '...Pentominoes...'], callback: () => {
+                    this.gamemode = this.gamemode >= this.gamemode_arr.length - 1 ? 0: this.gamemode + 1;
+                }},
+
                 {txt: ['Start'], callback: () => {
-                    this.gamemode = 0;
                     this.renderer.closeGamemodeMenu();
-                    this.start(this.id);
+                    this.start(this.id, this.key);
                 }},
                 {txt: ['<= Return to Menu'], callback: () => {
                     this.renderer.closeGamemodeMenu();
@@ -102,7 +128,6 @@ class Game {
             {txt: ['Play'], callback: () => {
                 this.closeMenu();
                 this.renderer.openGamemodeMenu();
-
             }},
             {txt: ['Settings'], callback: this.openSettings.bind(this)},
             {txt: ['Statistics'], callback: this.openStats.bind(this)}
@@ -168,7 +193,8 @@ class Game {
             body: JSON.stringify({
                 id: id,
                 key: key,
-                useKey: true
+                useKey: true,
+                gamemode: this.gamemode
             })
         })
         .then((response) => { //ensure the response
@@ -241,11 +267,12 @@ class Game {
 
     resetStats() {
         if (confirm('Reset all saved data?')) {
-            this.saved_stats = {
-                hiLevel: 0,
-                hiScore: 0,
-                hiLinesCleared: 0
-            };
+            for (let i = 0; i < this.gamemode_arr.length; i++) {
+                Object.keys(this.saved_stats[i]).forEach((key) => {
+                    this.saved_stats[i][key] = 0;
+                });
+            }
+
             localStorage.setItem('saved_stats', JSON.stringify(this.saved_stats));
 
             this.stats_screen.close();
@@ -254,34 +281,43 @@ class Game {
     }
 
     openStats() {
+        
         const saved_stats = structuredClone(this.saved_stats);
-        
+
         this.closeMenu();
-        
-        const info = Object.keys(saved_stats).map(key => (
-            {
-                head: `${key}`,
-                txt: saved_stats[key]
-            }
-        ));
-        for (let i = 0; i < info.length; i++) {
-            switch (info[i].head) {
-                case 'hiLevel':
-                    info[i].head = 'High Level:  ';
-                    break;
-                case 'hiScore':
-                    info[i].head = 'High Score:  ';
-                    break;
-                case 'hiLinesCleared':
-                    info[i].head = 'High Lines Cleared:  ';
-                    break;
-            }
-        }
+            console.log(this.gamemode)
+
+        const info = saved_stats.map((stat) => {
+            return Object.keys(stat).map(key => {
+                switch (key) {
+                    case 'hiLevel':
+                        return { head: 'High Level:  ', txt: stat[key] };
+                    case 'hiScore':
+                        return { head: 'High Score:  ', txt: stat[key] };
+                    case 'hiLinesCleared':
+                        return { head: 'High Lines Cleared:  ', txt: stat[key] };
+                    default:
+                        return { head: key, txt: stat[key] }; // fallback for unexpected keys
+                }
+            });
+        });
 
         this.stats_screen = {
-            info: new Info_Screen(this.canvas_menu, this.ctx_menu, "Statistics:", info, 5), 
+            displayGamemode: this.gamemode,
+            info: new Info_Screen(this.canvas_menu, this.ctx_menu, `Statistics - ${this.gamemode_arr[this.gamemode]}:`, info[this.gamemode], 5),
             menuLink: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 60, this.canvas_menu.width - 20, 50, ['Return'], this.closeStats.bind(this)),
             resetStats: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 120, this.canvas_menu.width - 20, 50, ['Clear Stats'], this.resetStats.bind(this)),
+            gamemode: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 180, this.canvas_menu.width - 20, 50, ['Polytris', 'Monomioes', 'Dominoes', 'Trominoes', 'Tetris', 'Pentominoes'], () => {
+                this.stats_screen.displayGamemode = this.stats_screen.displayGamemode >= this.gamemode_arr.length - 1 ? 0: this.stats_screen.displayGamemode + 1;
+                this.stats_screen.info.close();
+
+                this.stats_screen.info = new Info_Screen(this.canvas_menu, this.ctx_menu, `Statistics - ${this.gamemode_arr[this.stats_screen.displayGamemode]}:`, info[this.stats_screen.displayGamemode], 5)
+                this.stats_screen.info.open();
+
+                this.stats_screen.menuLink.draw();
+                this.stats_screen.resetStats.draw();
+                this.stats_screen.gamemode.draw();
+            }),
             listener: null,
             mouseListener: (event) => {
                 this.canvas_menu.style.cursor = 'default';
@@ -296,6 +332,9 @@ class Game {
                     ) || (
                         (mouseX >= this.stats_screen.resetStats.bounds.x && mouseX <= this.stats_screen.resetStats.bounds.x + this.stats_screen.resetStats.bounds.width) &&
                         (mouseY >= this.stats_screen.resetStats.bounds.y && mouseY <= this.stats_screen.resetStats.bounds.y + this.stats_screen.resetStats.bounds.height)
+                    ) || (
+                        (mouseX >= this.stats_screen.gamemode.bounds.x && mouseX <= this.stats_screen.gamemode.bounds.x + this.stats_screen.gamemode.bounds.width) &&
+                        (mouseY >= this.stats_screen.gamemode.bounds.y && mouseY <= this.stats_screen.gamemode.bounds.y + this.stats_screen.gamemode.bounds.height)
                     )
                 ) {
                     this.canvas_menu.style.cursor = 'pointer';
@@ -307,6 +346,7 @@ class Game {
                 this.stats_screen.info.open();
                 this.stats_screen.menuLink.init();
                 this.stats_screen.resetStats.init();
+                this.stats_screen.gamemode.init();
 
                 this.stats_screen.listener = this.stats_screen.mouseListener.bind(this);
                 this.canvas_menu.addEventListener('mousemove', this.stats_screen.mouseListener);
@@ -317,8 +357,13 @@ class Game {
                 this.stats_screen.info.close();
                 this.stats_screen.menuLink.removeListeners();
                 this.stats_screen.resetStats.removeListeners();
+                this.stats_screen.gamemode.removeListeners();
 
                 this.canvas_menu.removeEventListener('mousemove', this.stats_screen.listener);
+            },
+
+            changeDisplayGamemode() {
+                
             }
         };
 
@@ -378,7 +423,7 @@ class Game {
 
     gameLoop() {
         if (this.status === "end") {
-            this.renderer.endSequence(this.stats, this.saved_stats);
+            this.renderer.endSequence(this.stats, this.saved_stats[this.gamemode], this.gamemode_arr[this.gamemode]);
             return;
         }
     
@@ -405,9 +450,9 @@ class Game {
     }
 
     updateSavedStats() {
-        this.saved_stats.hiScore = this.saved_stats.hiScore < this.stats.score ? this.stats.score: this.saved_stats.hiScore;
-        this.saved_stats.hiLevel = this.saved_stats.hiLevel < this.stats.level ? this.stats.level: this.saved_stats.hiLevel;
-        this.saved_stats.hiLinesCleared = this.saved_stats.hiLinesCleared < this.stats.linesCleared ? this.stats.linesCleared: this.saved_stats.hiLinesCleared;
+        this.saved_stats[this.gamemode].hiScore = this.saved_stats[this.gamemode].hiScore < this.stats.score ? this.stats.score: this.saved_stats[this.gamemode].hiScore;
+        this.saved_stats[this.gamemode].hiLevel = this.saved_stats[this.gamemode].hiLevel < this.stats.level ? this.stats.level: this.saved_stats[this.gamemode].hiLevel;
+        this.saved_stats[this.gamemode].hiLinesCleared = this.saved_stats[this.gamemode].hiLinesCleared < this.stats.linesCleared ? this.stats.linesCleared: this.saved_stats[this.gamemode].hiLinesCleared;
 
         localStorage.setItem('saved_stats', JSON.stringify(this.saved_stats));
     }
@@ -420,4 +465,4 @@ class Game {
     }
 }
 
-export { Game }
+export { Game };

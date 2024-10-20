@@ -57,7 +57,7 @@ class Renderer {
 
         //Gamemode selection
         this.gamemodeBtns = btns.gamemodeBtns;
-        this.gamemodeMenu = new Game_Option_Menu(canvas_controls, ctx_controls, 'New Game', this.gamemodeBtns, this.r_dimensions.width, this.r_dimensions.height);
+        this.gamemodeMenu = new Game_Option_Menu(canvas_controls, ctx_controls, 'Select Gamemode', this.gamemodeBtns, this.r_dimensions.width, this.r_dimensions.height);
 
         //In-game quick controls
         this.quickControlBtns = btns.quickControlBtns;
@@ -162,7 +162,7 @@ class Renderer {
         ctx_hud.clearRect(0, 0, canvas_hud.width, canvas_hud.height);
     }
 
-    endSequence(stats, savedStats) {
+    endSequence(stats, savedStats, gamemodeStr) {
         //Death animation
         let animationFrame = [];
         for (let i = 0; i < this.b_dimensions.height; i++) {
@@ -248,8 +248,8 @@ class Renderer {
             const infoScreenY_savedStats = 60 + infoScreenY_stats + stats_formatted.length * 36;
 
             this.info_screen = {
-                stats: new Info_Screen(canvas_controls, ctx_controls, 'Statistics:', stats_formatted, infoScreenY_stats),
-                savedStats: new Info_Screen(canvas_controls, ctx_controls, 'Records:', savedStats_formatted, infoScreenY_savedStats),
+                stats: new Info_Screen(canvas_controls, ctx_controls, `${gamemodeStr} Statistics:`, stats_formatted, infoScreenY_stats),
+                savedStats: new Info_Screen(canvas_controls, ctx_controls, `${gamemodeStr} Records:`, savedStats_formatted, infoScreenY_savedStats),
                 open: () => {
                     this.info_screen.stats.open();
                     this.info_screen.savedStats.open();
