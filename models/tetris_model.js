@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 class Game {
-    constructor(id) {
+    constructor(id, gamemode) {
         this.id = id;
         this.key = this.generateKey();
         this.board = [];
@@ -21,6 +21,8 @@ class Game {
         this.eventLog = [];
         this.startTime = this.getTime();
         this.debug = { gravity: true };
+
+        this.gamemode = gamemode;
     }
 
     generateKey() {
@@ -103,12 +105,34 @@ class Game {
     }
 
     spawnNewPolyomino() {
-
         try {
             let file = null;
 
-            const n = Math.ceil(Math.random() * 5);
-            //const n = 5;
+            let n;
+            switch (this.gamemode) {
+                case 0:
+                    n = Math.ceil(Math.random() * 5);
+                    break;
+                case 1:
+                    n = 1;
+                    break;
+                case 2:
+                    n = 2;
+                    break;
+                case 3:
+                    n = 3;
+                    break;
+                case 4:
+                    n = 4;
+                    break;
+                case 5:
+                    n = 5;
+                    break;
+                default:
+                    n = Math.ceil(Math.random() * 5);
+                    break;
+            }
+            
             switch (n) {
                 case 1:
                     file = "monominoes";

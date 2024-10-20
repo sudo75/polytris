@@ -3,7 +3,7 @@ const Game = require('../models/tetris_model.js');
 let games = [];
 
 exports.start = (req, res) => {
-    const { id, key, useKey } = req.body;
+    const { id, key, useKey, gamemode } = req.body;
 
     if (id && key) {
         if (!isValidKey(id, key)) {
@@ -12,7 +12,7 @@ exports.start = (req, res) => {
     }
 
     if (!id) {
-        const newGame = new Game(games.length);
+        const newGame = new Game(games.length, gamemode);
         newGame.start();
         newGame.useKey = useKey;
         games.push(newGame);
