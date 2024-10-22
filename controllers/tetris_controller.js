@@ -11,16 +11,11 @@ exports.start = (req, res) => {
         }
     }
 
-    if (!id) {
-        const newGame = new Game(games.length, gamemode);
-        newGame.start();
-        newGame.useKey = useKey;
-        games.push(newGame);
-        //const frame = newGame.pushFrame();
-        return res.status(200).json({ message: `Game started successfully with id ${newGame.id}; status ${newGame.status}`, id: newGame.id, key: newGame.key, status: newGame.status });
-    } else {
-        return res.status(200).json({ message: 'Loading game' });
-    }
+    const newGame = new Game(games.length, gamemode);
+    newGame.start();
+    newGame.useKey = useKey;
+    games.push(newGame);
+    return res.status(200).json({ message: `Game started successfully with id ${newGame.id}; status ${newGame.status}`, id: newGame.id, key: newGame.key, status: newGame.status });
 };
 
 exports.reset = (req, res) => {
