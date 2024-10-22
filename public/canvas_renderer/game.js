@@ -46,6 +46,12 @@ class Game {
         ]
         this.gamemode_arr = ['Polytris', 'Monomioes', 'Dominoes', 'Trominoes', 'Tetris', 'Pentominoes'];
         this.gamemode = 0; //'Polytris', Dominoes, Trominoes, Tetris, Pentominoes, Monomioes
+        this.gamemodeBtn_arr = ['...*Polytris*...', '...Monomioes...', '...Dominoes...', '...Trominoes...', '...Tetris...', '...Pentominoes...']
+
+        this.settings = {
+            sound: false,
+            music: false
+        };
 
         this.renderer_btns = {
             quickControlBtns: [
@@ -90,7 +96,7 @@ class Game {
                     this.openMenu();
                 }}
             ],
-            gamemodeBtns: [ //in-game menu page
+            gamemodeBtns: [ //gamemode selection page
                 {txt: ['...*Polytris*...', '...Monomioes...', '...Dominoes...', '...Trominoes...', '...Tetris...', '...Pentominoes...'], callback: () => {
                     this.gamemode = this.gamemode >= this.gamemode_arr.length - 1 ? 0: this.gamemode + 1;
                 }},
@@ -114,12 +120,19 @@ class Game {
         this.renderer = new Renderer(width, height, this.renderer_btns);
 
         this.settings_btns = [
-            {txt: ['Setting 1'], callback: this.default_callback.bind(this)},
+            {txt: ['Sound Off', 'Sound On'], callback: () => {
+                this.settings.sound = this.settings.sound ? false: true;
+                localStorage.setItem('settings', JSON.stringify(this.settings));
+            }},
+            {txt: ['Music Off', 'Music On'], callback: () => {
+                this.settings.music = this.settings.music ? false: true;
+                localStorage.setItem('settings', JSON.stringify(this.settings));
+            }},
             {txt: ['Standard Rendering'], callback: this.useStandardRenderer.bind(this)},
             {txt: ['Main Menu'], callback: this.closeSettings.bind(this)}
         ]
 
-        this.settings = new Menu_Renderer('Settings', null, null, this.settings_btns, width, height, this.canvas_menu);
+        this.settings_screen = new Menu_Renderer('Settings', null, null, this.settings_btns, width, height, this.canvas_menu);
 
         this.stats_screen = null;
 
@@ -127,12 +140,18 @@ class Game {
         this.btns = [
             {txt: ['Play'], callback: () => {
                 this.closeMenu();
+                if (this.renderer_btns.gamemodeBtns[0].txt[0] !== this.gamemodeBtn_arr[this.gamemode]) {
+                    const rotatedTxtsArr = this.renderer_btns.gamemodeBtns[0].txt.slice(this.gamemode).concat(this.renderer_btns.gamemodeBtns[0].txt.slice(0, this.gamemode));
+                    this.renderer_btns.gamemodeBtns[0].txt = rotatedTxtsArr;
+
+                }
+        
                 this.renderer.openGamemodeMenu();
             }},
             {txt: ['Settings'], callback: this.openSettings.bind(this)},
             {txt: ['Statistics'], callback: this.openStats.bind(this)}
         ];
-        this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering (alpha)', 'v.0.4.0', this.btns, width, height, this.canvas_menu);
+        this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering', 'v.0.4.0', this.btns, width, height, this.canvas_menu);
     }
 
     init() {
@@ -140,6 +159,9 @@ class Game {
 
         //Set saved_stats
         this.saved_stats = JSON.parse(localStorage.getItem('saved_stats'));
+
+        //Set settings
+        this.settings = JSON.parse(localStorage.getItem('settings'));
 
         //Event listeners
         document.addEventListener("keydown", (event) => {
@@ -391,11 +413,20 @@ class Game {
 
     openSettings() {
         this.closeMenu();
-        this.settings.init();
+
+        const sound_rotationIndex = this.settings.sound ? 1: 0;
+        const sound_rotatedArr = this.settings_btns[0].txt.slice(sound_rotationIndex).concat(this.settings_btns[0].txt.slice(0, sound_rotationIndex));
+        this.settings_btns[0].txt = sound_rotatedArr;
+
+        const music_rotationIndex = this.settings.music ? 1: 0;
+        const music_rotatedArr = this.settings_btns[1].txt.slice(music_rotationIndex).concat(this.settings_btns[1].txt.slice(0, music_rotationIndex));
+        this.settings_btns[1].txt = music_rotatedArr;
+
+        this.settings_screen.init();
     }
 
     closeSettings() {
-        this.settings.close();
+        this.settings_screen.close();
         this.openMenu();
     }
 
