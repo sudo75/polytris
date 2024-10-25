@@ -53,6 +53,18 @@ class Game {
             music: false
         };
 
+        this.currentSongIndex = null;
+        this.audio = [
+            new Audio('../sound/chiptune_1.mp3'),
+            new Audio('../sound/chiptune_2.mp3'),
+            new Audio('../sound/chiptune_3.mp3'),
+            new Audio('../sound/chiptune_4.mp3'),
+            new Audio('../sound/chiptune_5.mp3'),
+            new Audio('../sound/chiptune_6-tetris-.mp3'),
+            new Audio('../sound/chiptune_7.mp3')
+        ];
+        this.musicListener = null;
+
         this.renderer_btns = {
             quickControlBtns: [
                 {txt: ['⚙'], callback: () => {
@@ -78,12 +90,12 @@ class Game {
                         }
                     }
                 }
-            ],
+            ], 
             gameControlBtns: [ //in-game menu page
                 {txt: ['Reset'], callback: () => {
                     this.renderer.closeGameControlMenu();
                     this.reset();
-                    this.renderer.endSequence(this.stats, this.saved_stats[this.gamemode], this.gamemode_arr[this.gamemode]);
+                    this.endGame();
                 }},
                 {txt: ['Return'], callback: () => {
                     this.renderer.closeGameControlMenu();
@@ -154,14 +166,71 @@ class Game {
         this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering', 'v.0.4.0', this.btns, width, height, this.canvas_menu);
     }
 
+    initMusic() {
+        if (!this.settings.music) {
+            return;
+        }
+        this.currentSongIndex = 5;
+        this.nextMusic(this.currentSongIndex);
+        this.pauseMusic();
+    }
+
+    playMusic() {
+        if (!this.settings.music) {
+            return;
+        }
+        this.audio[this.currentSongIndex].play();
+    }
+
+    pauseMusic() {
+        if (!this.settings.music) {
+            return;
+        }
+        this.audio[this.currentSongIndex].pause();
+    }
+
+    nextMusic(index) {
+        if (!this.settings.music) {
+            return;
+        }
+        if (index) {
+            this.currentSongIndex = index;
+        } else if (this.gamemode === 4) {
+            this.currentSongIndex = 5;
+        } else {
+            this.currentSongIndex = this.currentSongIndex >= this.audio.length - 1 ? 0: this.currentSongIndex + 1;
+        }
+        
+        const nextSong = () => {
+            //Remove event listener
+            this.audio[this.currentSongIndex].removeEventListener('ended', nextSong);
+
+            setTimeout(() => {
+                this.nextMusic();
+                if (this.status === 'play') {
+                    this.playMusic();
+                }
+            }, 5000);
+        }
+
+        //Event listener
+        this.audio[this.currentSongIndex].addEventListener('ended', nextSong);
+    }
+
     init() {
         this.openMenu();
 
         //Set saved_stats
-        this.saved_stats = JSON.parse(localStorage.getItem('saved_stats'));
+        if (localStorage.getItem('saved_stats')) {
+            this.saved_stats = JSON.parse(localStorage.getItem('saved_stats'));
+        }
 
         //Set settings
-        this.settings = JSON.parse(localStorage.getItem('settings'));
+        if (localStorage.getItem('settings')) {
+            this.settings = JSON.parse(localStorage.getItem('settings'));
+        }
+        
+        this.initMusic();
 
         //Event listeners
         document.addEventListener("keydown", (event) => {
@@ -203,6 +272,8 @@ class Game {
     start(id, key) {
         //this.closeMenu();
 
+        this.playMusic();
+        
         this.renderer.init();
         this.renderer.start();
 
@@ -240,6 +311,7 @@ class Game {
     }
 
     pause() {
+        this.pauseMusic();
         this.status = 'pause';
         this.sendReq(
             '../tetris/setStatus',
@@ -254,6 +326,7 @@ class Game {
     }
 
     resume() {
+        this.playMusic();
         this.sendReq(
             '../tetris/setStatus',
             'POST',
@@ -452,9 +525,16 @@ class Game {
         });
     }
 
+    endGame() {
+        this.renderer.endSequence(this.stats, this.saved_stats[this.gamemode], this.gamemode_arr[this.gamemode]);
+        this.pauseMusic();
+        this.currentSongIndex = 0;
+        this.nextMusic(this.currentSongIndex);
+    }
+
     gameLoop() {
         if (this.status === "end") {
-            this.renderer.endSequence(this.stats, this.saved_stats[this.gamemode], this.gamemode_arr[this.gamemode]);
+            this.endGame()
             return;
         }
     
