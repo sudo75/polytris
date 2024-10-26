@@ -17,7 +17,7 @@ class Game {
         this.status = null;
         this.debugToggle = {highlight_pivotPoint: false, displayText: false};
         this.css = {
-            tile_margin: 2, //default = 2
+            tile_margin: 1, //default = 2
             overlay: {
                 opaquePeriod: 2000,
                 fadePeriod: 500
@@ -208,6 +208,8 @@ class Game {
         }
 
         //Update stats
+        const stat_level = document.querySelector('#stat_body_level');
+        stat_level.innerText = stats.level;
         const stat_score = document.querySelector('#stat_body_score');
         stat_score.innerText = stats.score;
         const stat_linesCleared = document.querySelector('#stat_body_linesCleared');
