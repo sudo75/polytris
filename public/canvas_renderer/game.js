@@ -162,7 +162,7 @@ class Game {
             {txt: ['Settings'], callback: this.openSettings.bind(this)},
             {txt: ['Statistics'], callback: this.openStats.bind(this)}
         ];
-        this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering', 'v.0.4.0', this.btns, width, height, this.canvas_menu);
+        this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering', 'v.0.5.0', this.btns, width, height, this.canvas_menu);
     }
 
     initMusic() {
