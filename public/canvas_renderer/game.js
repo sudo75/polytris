@@ -10,7 +10,6 @@ class Game {
         this.canvas_menu = document.querySelector('.menu');
         this.ctx_menu = this.canvas_menu.getContext('2d');
         
-
         this.maxFPS = 20;
         this.frameFreq = 1000 / this.maxFPS; //ms
         this.id = null;
@@ -46,7 +45,7 @@ class Game {
         ]
         this.gamemode_arr = ['Polytris', 'Monomioes', 'Dominoes', 'Trominoes', 'Tetris', 'Pentominoes'];
         this.gamemode = 0; //'Polytris', Dominoes, Trominoes, Tetris, Pentominoes, Monomioes
-        this.gamemodeBtn_arr = ['...*Polytris*...', '...Monomioes...', '...Dominoes...', '...Trominoes...', '...Tetris...', '...Pentominoes...']
+        this.gamemodeBtn_arr = ['...*Polytris*...', '...Monomioes...', '...Dominoes...', '...Trominoes...', '...Tetris...', '...Pentominoes...'];
 
         this.settings = {
             sound: false,
@@ -134,6 +133,7 @@ class Game {
         this.settings_btns = [
             {txt: ['Sound Off', 'Sound On'], callback: () => {
                 this.settings.sound = this.settings.sound ? false: true;
+                console.log(this.settings.sound);
                 localStorage.setItem('settings', JSON.stringify(this.settings));
             }},
             {txt: ['Music Off', 'Music On'], callback: () => {
@@ -155,7 +155,6 @@ class Game {
                 if (this.renderer_btns.gamemodeBtns[0].txt[0] !== this.gamemodeBtn_arr[this.gamemode]) {
                     const rotatedTxtsArr = this.renderer_btns.gamemodeBtns[0].txt.slice(this.gamemode).concat(this.renderer_btns.gamemodeBtns[0].txt.slice(0, this.gamemode));
                     this.renderer_btns.gamemodeBtns[0].txt = rotatedTxtsArr;
-
                 }
         
                 this.renderer.openGamemodeMenu();
@@ -486,6 +485,9 @@ class Game {
 
     openSettings() {
         this.closeMenu();
+
+        this.settings_btns[0].txt = ['Sound Off', 'Sound On'];
+        this.settings_btns[1].txt = ['Music Off', 'Music On'];
 
         const sound_rotationIndex = this.settings.sound ? 1: 0;
         const sound_rotatedArr = this.settings_btns[0].txt.slice(sound_rotationIndex).concat(this.settings_btns[0].txt.slice(0, sound_rotationIndex));
