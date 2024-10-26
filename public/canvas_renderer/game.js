@@ -169,8 +169,7 @@ class Game {
         if (!this.settings.music) {
             return;
         }
-        this.currentSongIndex = 5;
-        this.nextMusic(this.currentSongIndex);
+        this.nextMusic('rand');
         this.pauseMusic();
     }
 
@@ -193,11 +192,17 @@ class Game {
             return;
         }
         if (index) {
-            this.currentSongIndex = index;
-        } else if (this.gamemode === 4) {
-            this.currentSongIndex = 5;
+            if (index === 'rand') {
+                this.currentSongIndex = Math.floor(Math.random() * this.audio.length)
+            } else {
+                this.currentSongIndex = index;
+            }
         } else {
             this.currentSongIndex = this.currentSongIndex >= this.audio.length - 1 ? 0: this.currentSongIndex + 1;
+        }
+
+        if (this.gamemode === 4) {
+            this.currentSongIndex = 5;
         }
         
         const nextSong = () => {
@@ -280,6 +285,7 @@ class Game {
     start(id, key) {
         //this.closeMenu();
 
+        this.nextMusic('rand');
         this.playMusic();
         
         this.renderer.init();
@@ -539,8 +545,10 @@ class Game {
     endGame() {
         this.renderer.endSequence(this.stats, this.saved_stats[this.gamemode], this.gamemode_arr[this.gamemode]);
         this.pauseMusic();
-        this.currentSongIndex = 0;
-        this.nextMusic(this.currentSongIndex);
+
+        const sound_gameOver = new Audio('../sound/game_over.mp3');
+        sound_gameOver.volume = 0.15;
+        sound_gameOver.play();
     }
 
     gameLoop() {
