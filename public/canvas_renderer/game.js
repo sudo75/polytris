@@ -9,6 +9,7 @@ class Game {
         this.height = height;
         this.canvas_menu = document.querySelector('.menu');
         this.ctx_menu = this.canvas_menu.getContext('2d');
+        this.sound_playing = false;
         
         this.maxFPS = 20;
         this.frameFreq = 1000 / this.maxFPS; //ms
@@ -133,7 +134,6 @@ class Game {
         this.settings_btns = [
             {txt: ['Sound Off', 'Sound On'], callback: () => {
                 this.settings.sound = this.settings.sound ? false: true;
-                console.log(this.settings.sound);
                 localStorage.setItem('settings', JSON.stringify(this.settings));
             }},
             {txt: ['Music Off', 'Music On'], callback: () => {
@@ -249,6 +249,15 @@ class Game {
                     break;
                 case ' ': //Spacebar
                     key = 'space';
+                    if (this.status === 'play' && !this.sound_playing && this.settings.sound) {
+                        const hit_sound = new Audio('../sound/hit.mp3');
+                        hit_sound.volume = 0.2;
+                        hit_sound.play();
+                        this.sound_playing = true;
+                        hit_sound.addEventListener('ended', () => {
+                            this.sound_playing = false;
+                        });
+                    }
                     break;
                 default:
                     return;
@@ -555,6 +564,13 @@ class Game {
             (data) => {
                 this.displayFrame(data.frame, data.status, data.stats, data.eventLog, data.debug);
                 this.status = data.status;
+
+                if (!this.stats) {
+                    
+                } else if (data.stats.level > this.stats.level && this.settings.sound) {
+                    const audio_levelUp = new Audio('../sound/level_up.mp3');
+                    audio_levelUp.play();
+                }
                 this.stats = data.stats;
 
                 this.updateSavedStats();
