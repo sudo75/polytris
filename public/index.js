@@ -23,6 +23,7 @@ class Game {
                 fadePeriod: 500
             }
         }
+        this.key = null;
     }
 
     init() {
@@ -52,7 +53,7 @@ class Game {
         this.sendReq(
             'tetris/setStatus',
             'POST',
-            JSON.stringify({ id: this.id, key: 0, status: 'pause' }),
+            JSON.stringify({ id: this.id, key: this.key, status: 'pause' }),
             (data) => {
                 console.log(data.message);
 
@@ -65,7 +66,7 @@ class Game {
         this.sendReq(
             'tetris/setStatus',
             'POST',
-            JSON.stringify({ id: this.id, key: 0, status: 'resume' }),
+            JSON.stringify({ id: this.id, key: this.key, status: 'resume' }),
             (data) => {
                 console.log(data.message);
 
@@ -107,6 +108,8 @@ class Game {
         })
         .then((data) => { //handle the response
             console.log(data.message);
+            console.log(data.key)
+            this.key = data.key;
             this.id = data.id;
             this.status = data.status;
             this.boardBlur(false);
@@ -127,7 +130,7 @@ class Game {
         this.sendReq(
             'tetris/reset',
             'POST',
-            JSON.stringify({ id: this.id, key: 0 }),
+            JSON.stringify({ id: this.id, key: this.key }),
             (data) => {
                 console.log(data.message);
                 //this.status = data.status;
@@ -140,7 +143,7 @@ class Game {
         this.sendReq(
             'tetris/reqFrame',
             'POST',
-            JSON.stringify({ id: this.id, key: 0 }),
+            JSON.stringify({ id: this.id, key: this.key }),
             (data) => {
                 this.displayFrame(data.frame, data.status, data.stats, data.eventLog, data.debug);
             }
@@ -292,6 +295,7 @@ class Game {
     }
 
     sendReq(url, method, body, callback) {
+        console.log(this.key)
         fetch(`${url}`, { //use /tetris/xyz format
             method: `${method}`,
             headers: {
@@ -440,11 +444,11 @@ document.addEventListener("keyup", (event) => {
 
 });
 
-function sendInput(key) {
+function sendInput(key_input) {
     game.sendReq(
-        `/tetris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
+        `/tetris/input/${key_input}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
         'POST',
-        JSON.stringify({ id: game.id, key: 0 }),
+        JSON.stringify({ id: game.id, key: this.key }),
         (data) => {
             game.displayFrame(data.frame, data.status, data.stats, null, data.debug);
         }
