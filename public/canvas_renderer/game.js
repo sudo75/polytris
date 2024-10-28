@@ -234,8 +234,6 @@ class Game {
             this.settings = JSON.parse(localStorage.getItem('settings'));
         }
         
-        this.initMusic();
-
         //Event listeners
         document.addEventListener("keydown", (event) => {
             if (this.status !== "play") {
@@ -285,7 +283,7 @@ class Game {
     start(id, key) {
         //this.closeMenu();
 
-        this.nextMusic('rand');
+        this.initMusic();
         this.playMusic();
         
         this.renderer.init();
