@@ -374,13 +374,11 @@ class Game {
         console.log('Default callback: not assigned');
     }
 
-    resetStats() {
-        if (confirm('Reset all saved data?')) {
-            for (let i = 0; i < this.gamemode_arr.length; i++) {
-                Object.keys(this.saved_stats[i]).forEach((key) => {
-                    this.saved_stats[i][key] = 0;
-                });
-            }
+    resetStats(gamemode) {
+        if (confirm(`Reset all ${this.gamemode_arr[gamemode]} data?`)) {
+            Object.keys(this.saved_stats[gamemode]).forEach((key) => {
+                this.saved_stats[gamemode][key] = 0;
+            });
 
             localStorage.setItem('saved_stats', JSON.stringify(this.saved_stats));
 
@@ -415,7 +413,9 @@ class Game {
             displayGamemode: this.gamemode,
             info: new Info_Screen(this.canvas_menu, this.ctx_menu, `Statistics - ${this.gamemode_arr[this.gamemode]}:`, info[this.gamemode], 5),
             menuLink: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 60, this.canvas_menu.width - 20, 50, ['Return'], this.closeStats.bind(this)),
-            resetStats: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 120, this.canvas_menu.width - 20, 50, ['Clear Stats'], this.resetStats.bind(this)),
+            resetStats: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 120, this.canvas_menu.width - 20, 50, ['Clear Gamemode Stats'], () => {
+                this.resetStats(this.stats_screen.displayGamemode);
+            }),
             gamemode: new Btn(this.canvas_menu, this.ctx_menu, 10, this.canvas_menu.height - 180, this.canvas_menu.width - 20, 50, ['Polytris', 'Monomioes', 'Dominoes', 'Trominoes', 'Tetris', 'Pentominoes'], () => {
                 this.stats_screen.displayGamemode = this.stats_screen.displayGamemode >= this.gamemode_arr.length - 1 ? 0: this.stats_screen.displayGamemode + 1;
                 this.stats_screen.info.close();
