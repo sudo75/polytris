@@ -12,7 +12,8 @@ class Board_Renderer {
             outline: {
                 colour: 'black',
                 weight: 2
-            }
+            },
+            roundingRadius: 2
         }
         this.styleMap = {
             0: {colour: 'white'},
@@ -62,13 +63,28 @@ class Board_Renderer {
         const computedWidth = width - this.tileStyle.margin * 2;
         const computedHeight = height - this.tileStyle.margin * 2;
 
-        //Tile
-        this.ctx.fillRect(computedOffsetWidth, computedOffsetHeight, computedWidth, computedHeight);
+        const drawRoundedRect = (x, y, width, height, radius) => {
+            //Tile
+            this.ctx.beginPath();
+            this.ctx.moveTo(x + radius, y);
+            this.ctx.lineTo(x + width - radius, y);
+            this.ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            this.ctx.lineTo(x + width, y + height - radius);
+            this.ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            this.ctx.lineTo(x + radius, y + height);
+            this.ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            this.ctx.lineTo(x, y + radius);
+            this.ctx.quadraticCurveTo(x, y, x + radius, y);
+            this.ctx.closePath();
+            this.ctx.fill();
 
-        //Outline
-        this.ctx.strokeStyle = this.tileStyle.outline.colour;
-        this.ctx.lineWidth = this.tileStyle.outline.weight;
-        this.ctx.strokeRect(computedOffsetWidth, computedOffsetHeight, computedWidth, computedHeight);
+            //Outline
+            this.ctx.strokeStyle = this.tileStyle.outline.colour;
+            this.ctx.lineWidth = this.tileStyle.outline.weight;
+            this.ctx.stroke();
+        }
+
+        drawRoundedRect(computedOffsetWidth, computedOffsetHeight, computedWidth, computedHeight, this.tileStyle.roundingRadius);
     }
 }
 
