@@ -161,7 +161,8 @@ class Game {
             const polyominoIndex = type - 1; //index to find new polyomino
 
             const newPolyomino = polyominoes[polyominoIndex];
-            const variation = Math.floor(Math.random() * 4);
+            //const variation = Math.floor(Math.random() * 4);
+            const variation = 0;
 
             let newPolyominoPos = newPolyomino.pos;
 
