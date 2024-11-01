@@ -15,8 +15,8 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
 
-const tetris_routes = require('./routes/tetris_routes');
-app.use('/tetris', tetris_routes);
+const polytris_routes = require('./routes/polytris_routes');
+app.use('/polytris', polytris_routes);
 
 app.use(express.static(path.join(__dirname, 'public')));
 

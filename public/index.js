@@ -51,7 +51,7 @@ class Game {
 
     pause() {
         this.sendReq(
-            'tetris/setStatus',
+            'polytris/setStatus',
             'POST',
             JSON.stringify({ id: this.id, key: this.key, status: 'pause' }),
             (data) => {
@@ -64,7 +64,7 @@ class Game {
 
     resume() {
         this.sendReq(
-            'tetris/setStatus',
+            'polytris/setStatus',
             'POST',
             JSON.stringify({ id: this.id, key: this.key, status: 'resume' }),
             (data) => {
@@ -90,7 +90,7 @@ class Game {
     }
 
     start(id) {
-        fetch(`tetris/start`, {
+        fetch(`polytris/start`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -128,7 +128,7 @@ class Game {
 
     reset() {
         this.sendReq(
-            'tetris/reset',
+            'polytris/reset',
             'POST',
             JSON.stringify({ id: this.id, key: this.key }),
             (data) => {
@@ -141,7 +141,7 @@ class Game {
 
     requestNewFrame() {
         this.sendReq(
-            'tetris/reqFrame',
+            'polytris/reqFrame',
             'POST',
             JSON.stringify({ id: this.id, key: this.key }),
             (data) => {
@@ -296,7 +296,7 @@ class Game {
 
     sendReq(url, method, body, callback) {
         console.log(this.key)
-        fetch(`${url}`, { //use /tetris/xyz format
+        fetch(`${url}`, { //use /polytris/xyz format
             method: `${method}`,
             headers: {
                 'Content-Type': 'application/json'
@@ -319,7 +319,7 @@ class Game {
 
     async sendAsyncReq(url, method, body, callback) {
         try {
-            const response = await fetch(url, { //use /tetris/xyz format
+            const response = await fetch(url, { //use /polytris/xyz format
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
@@ -446,7 +446,7 @@ document.addEventListener("keyup", (event) => {
 
 function sendInput(key_input) {
     game.sendReq(
-        `/tetris/input/${key_input}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
+        `/polytris/input/${key_input}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
         'POST',
         JSON.stringify({ id: game.id, key: this.key }),
         (data) => {

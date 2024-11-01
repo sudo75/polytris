@@ -1,4 +1,4 @@
-const Game = require('../models/tetris_model.js');
+const Game = require('../models/polytris_model.js');
 
 let games = [];
 

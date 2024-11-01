@@ -270,7 +270,7 @@ class Game {
         
         const sendInput = (key) => {
             this.sendReq(
-                `/tetris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
+                `/polytris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
                 'POST',
                 JSON.stringify({ id: this.id, key: this.key }),
                 (data) => {
@@ -290,7 +290,7 @@ class Game {
         this.renderer.start();
 
         //Send Start Request
-        fetch(`../tetris/start`, {
+        fetch(`../polytris/start`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -326,7 +326,7 @@ class Game {
         this.pauseMusic();
         this.status = 'pause';
         this.sendReq(
-            '../tetris/setStatus',
+            '../polytris/setStatus',
             'POST',
             JSON.stringify({ id: this.id, key: this.key, status: 'pause' }),
             (data) => {
@@ -340,7 +340,7 @@ class Game {
     resume() {
         this.playMusic();
         this.sendReq(
-            '../tetris/setStatus',
+            '../polytris/setStatus',
             'POST',
             JSON.stringify({ id: this.id, key: this.key, status: 'resume' }),
             (data) => {
@@ -353,7 +353,7 @@ class Game {
 
     reset() {
         this.sendReq(
-            '../tetris/reset',
+            '../polytris/reset',
             'POST',
             JSON.stringify({ id: this.id, key: this.key }),
             (data) => {
@@ -519,7 +519,7 @@ class Game {
     }
 
     sendReq(url, method, body, callback) {
-        fetch(`${url}`, { //use /tetris/xyz format
+        fetch(`${url}`, { //use /polytris/xyz format
             method: `${method}`,
             headers: {
                 'Content-Type': 'application/json'
@@ -564,7 +564,7 @@ class Game {
 
     requestNewFrame() {
         this.sendReq(
-            '../tetris/reqFrame',
+            '../polytris/reqFrame',
             'POST',
             JSON.stringify({ id: this.id, key: this.key }),
             (data) => {
