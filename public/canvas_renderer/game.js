@@ -204,6 +204,8 @@ class Game {
         if (this.gamemode === 4) {
             this.currentSongIndex = 5;
         }
+
+        this.audio[this.currentSongIndex].currentTime = 0;
         
         const nextSong = () => {
             //Remove event listener
