@@ -50,7 +50,7 @@ class Game {
 
         this.settings = {
             sound: false,
-            music: false
+            music: false,
         };
 
         this.currentSongIndex = null;
@@ -97,6 +97,11 @@ class Game {
                     this.reset();
                     this.endGame();
                 }},
+                {txt: ['Next music'], callback: () => {
+                    this.nextMusic();
+                    this.renderer.closeGameControlMenu();
+                    this.resume();
+                }},
                 {txt: ['Return'], callback: () => {
                     this.renderer.closeGameControlMenu();
                     this.resume();
@@ -140,7 +145,7 @@ class Game {
                 this.settings.music = this.settings.music ? false: true;
                 localStorage.setItem('settings', JSON.stringify(this.settings));
             }},
-            {txt: ['Standard Rendering'], callback: this.useStandardRenderer.bind(this)},
+            {txt: ['Classic Rendering'], callback: this.useStandardRenderer.bind(this)},
             {txt: ['Main Menu'], callback: this.closeSettings.bind(this)}
         ]
 
@@ -162,7 +167,7 @@ class Game {
             {txt: ['Settings'], callback: this.openSettings.bind(this)},
             {txt: ['Statistics'], callback: this.openStats.bind(this)}
         ];
-        this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering', 'v.0.5.0', this.btns, width, height, this.canvas_menu);
+        this.menu = new Menu_Renderer('Polytris', 'Canvas Rendering', 'v.1.0.0', this.btns, width, height, this.canvas_menu);
     }
 
     initMusic() {
@@ -546,9 +551,11 @@ class Game {
         this.renderer.endSequence(this.stats, this.saved_stats[this.gamemode], this.gamemode_arr[this.gamemode]);
         this.pauseMusic();
 
-        const sound_gameOver = new Audio('../sound/game_over.mp3');
-        sound_gameOver.volume = 0.15;
-        sound_gameOver.play();
+        if (this.settings.sound) {
+            const sound_gameOver = new Audio('../sound/game_over.mp3');
+            sound_gameOver.volume = 0.15;
+            sound_gameOver.play();
+        }
     }
 
     gameLoop() {
