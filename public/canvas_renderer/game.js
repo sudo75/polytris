@@ -10,9 +10,25 @@ class Game {
         this.canvas_menu = document.querySelector('.menu');
         this.ctx_menu = this.canvas_menu.getContext('2d');
         this.sound_playing = false;
+
+        this.pendingInputs = [];
+        this.pendingFrameCount = 0;
+        this.pendingFrameLimit = 10;
+
+        this.droppedFrames = [];
         
+        this.maxFPSOptions = [2, 5, 10, 20, 30, 40, 50, 60];
         this.maxFPS = 20;
         this.frameFreq = 1000 / this.maxFPS; //ms
+
+        this.frameLog = [];
+        this.currentFPS = this.maxFPS;
+        this.displayFPS = this.currentFPS;
+        this.currentLag = 0;
+        this.displayLag = this.currentLag;
+
+        this.FPS_displayFreq = 500;
+
         this.id = null;
         this.key = null;
         this.status = null;
@@ -51,6 +67,8 @@ class Game {
         this.settings = {
             sound: false,
             music: false,
+            dynamicFPS: true,
+            dynamicDelay: true
         };
 
         this.currentSongIndex = null;
@@ -143,6 +161,29 @@ class Game {
             }},
             {txt: ['Music Off', 'Music On'], callback: () => {
                 this.settings.music = this.settings.music ? false: true;
+                localStorage.setItem('settings', JSON.stringify(this.settings));
+            }},
+            {txt: ['Dynamic FPS (recommended): On', 'Dynamic FPS: Off'], callback: () => {
+                this.settings.dynamicFPS = this.settings.dynamicFPS ? false: true;
+                localStorage.setItem('settings', JSON.stringify(this.settings));
+            }},
+            {txt: ['MaxFPS: 2', 'MaxFPS: 5', 'MaxFPS: 10', 'MaxFPS: 20', 'MaxFPS: 30', 'MaxFPS: 40', 'MaxFPS: 50', 'MaxFPS: 60'], callback: () => {
+                for (let i = 0; i < this.maxFPSOptions.length; i++) {
+                    if (this.maxFPS === this.maxFPSOptions[i]) {
+                        if (i >= this.maxFPSOptions.length - 1) {
+                            this.maxFPS = this.maxFPSOptions[0];
+                            break;
+                        } else {
+                            this.maxFPS = this.maxFPSOptions[i + 1];
+                            break;
+                        }
+                    }
+                }
+
+                localStorage.setItem('maxFPS', JSON.stringify(this.maxFPS));
+            }},
+            {txt: ['Dynamic frame delay: On', 'Dynamic frame delay: Off'], callback: () => {
+                this.settings.dynamicDelay = this.settings.dynamicDelay ? false: true;
                 localStorage.setItem('settings', JSON.stringify(this.settings));
             }},
             {txt: ['Classic Rendering'], callback: this.useStandardRenderer.bind(this)},
@@ -240,6 +281,10 @@ class Game {
         if (localStorage.getItem('settings')) {
             this.settings = JSON.parse(localStorage.getItem('settings'));
         }
+
+        if (localStorage.getItem('maxFPS')) {
+            this.maxFPS = JSON.parse(localStorage.getItem('maxFPS'));
+        }
         
         //Event listeners
         document.addEventListener("keydown", (event) => {
@@ -276,15 +321,37 @@ class Game {
         });
         
         const sendInput = (key) => {
+            let consecInputs = 0;
+            for (let i = this.pendingInputs.length - 2; i >= 0; i--) {
+                if (this.pendingInputs[i] === this.pendingInputs[this.pendingInputs.length - 1]) {
+                    consecInputs++;
+                } else {
+                    break;
+                }
+            }
+
+            if (consecInputs > 3 || this.pendingInputs.length > 6) {
+                console.warn(`Input cancelled: "${key}"`)
+                return;
+            }
+
+            this.pendingInputs.push(key);
             this.sendReq(
                 `/polytris/input/${key}`,  //ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 'space'
                 'POST',
                 JSON.stringify({ id: this.id, key: this.key }),
                 (data) => {
+                    this.pendingInputs.shift();
                     this.displayFrame(data.frame, data.status, data.stats, null, data.debug);
                 }
             );
         }
+
+        //DisplayFPS
+        setInterval(() => {
+            this.displayFPS = this.currentFPS;
+            this.displayLag = this.currentLag;
+        }, this.FPS_displayFreq);
     }
 
     start(id, key) {
@@ -365,7 +432,7 @@ class Game {
             JSON.stringify({ id: this.id, key: this.key }),
             (data) => {
                 console.log(data.message);
-                //this.status = data.status;
+                this.status = data.status;
                 this.stats = data.stats;
             }
         );
@@ -397,7 +464,6 @@ class Game {
         const saved_stats = structuredClone(this.saved_stats);
 
         this.closeMenu();
-            console.log(this.gamemode)
 
         const info = saved_stats.map((stat) => {
             return Object.keys(stat).map(key => {
@@ -508,6 +574,10 @@ class Game {
 
         this.settings_btns[0].txt = ['Sound Off', 'Sound On'];
         this.settings_btns[1].txt = ['Music Off', 'Music On'];
+        this.settings_btns[2].txt = ['Dynamic FPS: Off', 'Dynamic FPS (recommended): On'];
+        this.settings_btns[3].txt = ['MaxFPS: 2', 'MaxFPS: 5', 'MaxFPS: 10', 'MaxFPS: 20', 'MaxFPS: 30', 'MaxFPS: 40', 'MaxFPS: 50', 'MaxFPS: 60'];
+        this.settings_btns[4].txt = ['Dynamic frame delay: Off', 'Dynamic frame delay: On'];
+
 
         const sound_rotationIndex = this.settings.sound ? 1: 0;
         const sound_rotatedArr = this.settings_btns[0].txt.slice(sound_rotationIndex).concat(this.settings_btns[0].txt.slice(0, sound_rotationIndex));
@@ -516,6 +586,26 @@ class Game {
         const music_rotationIndex = this.settings.music ? 1: 0;
         const music_rotatedArr = this.settings_btns[1].txt.slice(music_rotationIndex).concat(this.settings_btns[1].txt.slice(0, music_rotationIndex));
         this.settings_btns[1].txt = music_rotatedArr;
+
+        const dynamicFPS_rotationIndex = this.settings.dynamicFPS ? 1: 0;
+        const dynamicFPS_rotatedArr = this.settings_btns[2].txt.slice(dynamicFPS_rotationIndex).concat(this.settings_btns[2].txt.slice(0, dynamicFPS_rotationIndex));
+        this.settings_btns[2].txt = dynamicFPS_rotatedArr;
+
+        const get_maxFPS_ri = () => {
+            for (let i = 0; i < this.maxFPSOptions.length; i++) {
+                if (this.maxFPS === this.maxFPSOptions[i]) {
+                    return i;
+                }
+            }
+        }
+        const maxFPS_rotationIndex = get_maxFPS_ri();
+        const maxFPS_rotatedArr = this.settings_btns[3].txt.slice(maxFPS_rotationIndex).concat(this.settings_btns[3].txt.slice(0, maxFPS_rotationIndex));
+        this.settings_btns[3].txt = maxFPS_rotatedArr;
+
+        const dynamicDelay_rotationIndex = this.settings.dynamicDelay ? 1: 0;
+        const dynamicDelay_rotatedArr = this.settings_btns[4].txt.slice(dynamicDelay_rotationIndex).concat(this.settings_btns[4].txt.slice(0, dynamicDelay_rotationIndex));
+        this.settings_btns[4].txt = dynamicDelay_rotatedArr;
+
 
         this.settings_screen.init();
     }
@@ -549,6 +639,13 @@ class Game {
 
     endGame() {
         this.renderer.endSequence(this.stats, this.saved_stats[this.gamemode], this.gamemode_arr[this.gamemode]);
+        if (this.stats.fps) {
+            delete this.stats.fps;
+        }
+        if (this.stats.lag) {
+            delete this.stats.lag;
+        }
+
         this.pauseMusic();
 
         if (this.settings.sound) {
@@ -560,7 +657,7 @@ class Game {
 
     gameLoop() {
         if (this.status === "end") {
-            this.endGame()
+            this.endGame();
             return;
         }
     
@@ -572,22 +669,118 @@ class Game {
     }
 
     requestNewFrame() {
+        // Cancel frame req if pending frame count is too high
+        if (this.pendingFrameCount >= this.pendingFrameLimit) {
+            this.droppedFrames.push(performance.now());
+            console.warn(`Frame request cancelled. Pending frames: ${this.pendingFrameCount}`);
+            return;
+        }
+
+        // Increment pending frame count
+        this.pendingFrameCount++;
+
+        // Begin performace test
+        const startTime = performance.now();
+
+        // SEND THE REQUEST
         this.sendReq(
             '../polytris/reqFrame',
             'POST',
             JSON.stringify({ id: this.id, key: this.key }),
+            // RESULT:
             (data) => {
+                // Calculate pending frames & performance metrics
+                this.pendingFrameCount--;
+
+                const currentTime = performance.now();
+                const processingTime = currentTime - startTime;
+
+                // Update frame log for FPS calculation
+                this.frameLog.push(currentTime);
+
+                // Warn if processing time is too high
+                if (processingTime > 1000) {
+                    console.warn(`Very high frame processing time: ${Math.round(processingTime)} ms per frame`);
+                }
+
+                // Calculate buffer
+                let buffer = 0;
+                if (this.settings.dynamicDelay) {
+                    if (processingTime > 800) {
+                        buffer = 0.5;
+                    } else if (processingTime > 500) {
+                        buffer = 0.4;
+                    } else if (processingTime > 400) {
+                        buffer = 0.3;
+                    } else if (processingTime > 300) {
+                        buffer = 0.2;
+                    } else if (processingTime > 200) {
+                        buffer = 0.1;
+                    }
+                }
+
+                // Calculate dropped frames
+                let droppedFrames_1000ms = 0;
+                for (let i = this.droppedFrames.length - 1; i >= 0; i--) {
+                    if (currentTime - this.droppedFrames[i] <= 1000) {
+                        droppedFrames_1000ms++;
+                    } else {
+                        break;
+                    }
+                }
+                for (let i = 0; i < (this.droppedFrames.length - 1) - droppedFrames_1000ms; i++) {
+                    this.droppedFrames.shift();
+                }
+
+                // Calculate frame frequency
+                if (this.settings.dynamicFPS) {
+                    const tentative_frameFreq = processingTime * (1 + buffer); //Give x% extra time as buffer
+
+                    if (tentative_frameFreq < (1000 / this.maxFPS)) { // if tent. frame freq is lower than the max frame freq
+                        this.frameFreq = 1000 / this.maxFPS;
+                    } else {
+                        this.frameFreq = tentative_frameFreq;
+                    }
+                } else {
+                    this.frameFreq = (1000 / this.maxFPS) * (1 + buffer); //Give x% extra time as buffer
+                }
+
+                // Calculate lag between req and res
+                this.currentLag = Math.round(processingTime); // in ms
+
+                // Calculate FPS by counting the frame logs in the last 1000 ms
+                this.currentFPS = 0;
+                for (let i = this.frameLog.length - 1; i >= 0; i--) {
+                    if (currentTime - this.frameLog[i] <= 1000) {
+                        this.currentFPS++;
+                    } else {
+                        break;
+                    }
+                }
+
+                //Remove older frame logs
+                for (let i = this.frameLog.length - 1; i >= 0; i--) {
+                    if (currentTime - this.frameLog[i] > 2000) {
+                        this.frameLog.splice(i, 1);
+                    }
+                }
+
+                // Display frame
                 this.displayFrame(data.frame, data.status, data.stats, data.eventLog, data.debug);
+                
+                // Update status
                 this.status = data.status;
 
+                // Play level up audio if level has increased
                 if (!this.stats) {
                     
                 } else if (data.stats.level > this.stats.level && this.settings.sound) {
                     const audio_levelUp = new Audio('../sound/level_up.mp3');
                     audio_levelUp.play();
                 }
-                this.stats = data.stats;
 
+                // Update stats & saved stats
+                this.stats = data.stats;
                 this.updateSavedStats();
             }
         );
@@ -605,6 +798,8 @@ class Game {
         if (this.status === "pause") {
             return;
         }
+        stats.fps = this.displayFPS;
+        stats.lag = `${this.displayLag} ms`;
         this.renderer.displayFrame(frame, status, stats, eventLog, debug);
     }
 }
